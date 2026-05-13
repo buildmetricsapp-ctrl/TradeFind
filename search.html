@@ -348,6 +348,51 @@ async function doSearch() {
   }
 }
 
+function getHoursStatus(wh) {
+  if (!wh) return null;
+  const DAY_KEYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const now = new Date();
+  const todayKey = DAY_KEYS[now.getDay()];
+  const val = wh[todayKey];
+  if (!val || val === 'off') return { label: 'Closed today', open: false };
+  const [start, end] = val.split('-');
+  const [sh,sm] = start.split(':').map(Number);
+  const [eh,em] = end.split(':').map(Number);
+  const nowMins = now.getHours()*60 + now.getMinutes();
+  const isOpen = nowMins >= sh*60+sm && nowMins < eh*60+em;
+  const fmt = t => { const [h,m]=t.split(':'); const hr=parseInt(h); return `${hr>12?hr-12:hr||12}:${m}${hr>=12?'pm':'am'}`; };
+  return { label: `${fmt(start)} – ${fmt(end)}`, open: isOpen };
+}
+
+function hoursCardBadge(wh) {
+  const s = getHoursStatus(wh);
+  if (!s) return '';
+  return s.open
+    ? `<span style="font-size:0.72rem;padding:2px 8px;border-radius:99px;background:rgba(59,109,17,0.2);color:#97C459;border:1px solid rgba(59,109,17,0.3);">🟢 Open · ${s.label}</span>`
+    : `<span style="font-size:0.72rem;padding:2px 8px;border-radius:99px;background:rgba(162,45,45,0.2);color:#F09595;border:1px solid rgba(162,45,45,0.3);">🔴 ${s.label}</span>`;
+}
+
+function hoursModalRows(wh) {
+  if (!wh) return '';
+  const DAY_KEYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const DAY_NAMES = {Mon:'Mon',Tue:'Tue',Wed:'Wed',Thu:'Thu',Fri:'Fri',Sat:'Sat',Sun:'Sun'};
+  const todayKey = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()];
+  const fmt = t => { const [h,m]=t.split(':'); const hr=parseInt(h); return `${hr>12?hr-12:hr||12}:${m}${hr>=12?'pm':'am'}`; };
+  const rows = DAY_KEYS.map(key => {
+    const val = wh[key];
+    const isToday = key === todayKey;
+    const timeStr = (!val||val==='off') ? 'Closed' : (() => { const [s,e]=val.split('-'); return `${fmt(s)} – ${fmt(e)}`; })();
+    return `<div style="display:flex;justify-content:space-between;font-size:0.78rem;padding:3px 0;border-bottom:1px solid rgba(77,175,90,0.06);">
+      <span style="color:${isToday?'#4CAF5A':'var(--text-muted)'};font-weight:${isToday?'500':'400'}">${DAY_NAMES[key]}${isToday?' ★':''}</span>
+      <span style="color:${(!val||val==='off')?'var(--text-muted)':'var(--cream)'}">${timeStr}</span>
+    </div>`;
+  }).join('');
+  return `<div class="modal-row" style="align-items:flex-start;">
+    <span class="modal-row-label">Hours</span>
+    <div style="flex:1;">${rows}</div>
+  </div>`;
+}
+
 function renderResults() {
   const list = document.getElementById('contractorList');
   let data = applyFilters(allResults);
@@ -376,6 +421,7 @@ function renderResults() {
             <span>📍 Serves: ${(c.zip_codes || []).slice(0,3).join(', ')}${(c.zip_codes||[]).length > 3 ? ' +more' : ''}</span>
             <span>📅 Joined ${new Date(c.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'})}</span>
           </div>
+          ${c.working_hours ? `<div style="margin-bottom:8px;">${hoursCardBadge(c.working_hours)}</div>` : ''}
           ${(c.services||[]).length ? `<div class="c-tags">${(c.services||[]).slice(0,4).map(s=>`<span class="c-tag">${s}</span>`).join('')}${(c.services||[]).length>4?`<span class="c-tag">+${(c.services||[]).length-4} more</span>`:''}</div>` : ''}
           ${c.description ? `<div style="font-size:0.82rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">${c.description.substring(0,120)}${c.description.length>120?'…':''}</div>` : ''}
           <div class="c-actions" onclick="event.stopPropagation()">
@@ -413,6 +459,7 @@ function openModal(id) {
           <div class="modal-row"><span class="modal-row-label">Experience</span><span class="modal-row-val">${c.years_experience || 0} years</span></div>
           <div class="modal-row"><span class="modal-row-label">Areas</span><span class="modal-row-val">${(c.zip_codes||[]).join(', ') || '—'}</span></div>
           ${(c.services||[]).length ? `<div class="modal-row"><span class="modal-row-label">Services</span><span class="modal-row-val">${(c.services||[]).join(', ')}</span></div>` : ''}
+          ${hoursModalRows(c.working_hours)}
         </div>
         <div class="modal-actions">
           <button class="c-btn primary" onclick="copyText('${c.phone}','Phone number')">📞 Copy phone</button>
