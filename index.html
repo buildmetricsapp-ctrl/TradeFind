@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TradeFind — Find Trusted Local Contractors</title>
+<meta name="description" content="TradeFind connects you with verified contractors and small businesses in your area. Plumbers, electricians, roofers, painters and more — all in one place." />
+<meta name="theme-color" content="#0D1F0F" />
+
+<!-- PWA manifest inline reference -->
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green-dark: #0D1F0F;
+    --green-mid: #1A3D1E;
+    --green-accent: #2D6A35;
+    --green-bright: #4CAF5A;
+    --cream: #F5F0E8;
+    --cream-dim: #E8E2D4;
+    --amber: #E8A020;
+    --text-light: #C8D8C9;
+    --text-muted: #7A9B7D;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--green-dark);
+    color: var(--cream);
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.25rem 2rem;
+    background: rgba(13,31,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(77,175,90,0.12);
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; font-weight: 900;
+    color: var(--cream); letter-spacing: -0.02em;
+  }
+  .logo span { color: var(--green-bright); }
+  .nav-links { display: flex; align-items: center; gap: 2rem; }
+  .nav-links a {
+    font-size: 0.875rem; font-weight: 400;
+    color: var(--text-muted); text-decoration: none;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--cream); }
+  .nav-cta {
+    background: var(--green-bright); color: var(--green-dark) !important;
+    padding: 0.5rem 1.25rem; border-radius: 99px;
+    font-weight: 500 !important; transition: transform .15s, background .15s !important;
+  }
+  .nav-cta:hover { background: #5DC96C !important; transform: scale(1.03); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 8rem 2rem 4rem;
+    max-width: 1100px; margin: 0 auto;
+    position: relative;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--green-bright);
+    background: rgba(77,175,90,0.1);
+    border: 1px solid rgba(77,175,90,0.25);
+    padding: 0.4rem 1rem; border-radius: 99px;
+    margin-bottom: 2rem;
+    opacity: 0; animation: fadeUp .6s .1s forwards;
+  }
+  .eyebrow-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green-bright);
+    animation: pulse 2s infinite;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 900; line-height: 1.05;
+    letter-spacing: -0.03em;
+    max-width: 780px;
+    opacity: 0; animation: fadeUp .7s .2s forwards;
+  }
+  .hero h1 em {
+    font-style: italic; color: var(--green-bright);
+    position: relative;
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-weight: 300; line-height: 1.7;
+    color: var(--text-light);
+    max-width: 520px; margin-top: 1.75rem;
+    opacity: 0; animation: fadeUp .7s .35s forwards;
+  }
+
+  /* ── SIGNUP FORM ── */
+  .signup-block {
+    margin-top: 2.5rem;
+    opacity: 0; animation: fadeUp .7s .5s forwards;
+  }
+  .signup-label {
+    font-size: 0.8rem; font-weight: 500; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+  .signup-form {
+    display: flex; gap: 0; max-width: 480px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(77,175,90,0.25);
+    border-radius: 12px; overflow: hidden;
+    transition: border-color .2s;
+  }
+  .signup-form:focus-within { border-color: rgba(77,175,90,0.6); }
+  .signup-form input {
+    flex: 1; background: none; border: none; outline: none;
+    padding: 1rem 1.25rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem; color: var(--cream);
+  }
+  .signup-form input::placeholder { color: var(--text-muted); }
+  .signup-form button {
+    background: var(--green-bright); border: none; cursor: pointer;
+    padding: 1rem 1.5rem; font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; font-weight: 500; color: var(--green-dark);
+    transition: background .15s; white-space: nowrap;
+  }
+  .signup-form button:hover { background: #5DC96C; }
+  .signup-note {
+    font-size: 0.78rem; color: var(--text-muted);
+    margin-top: 0.6rem;
+  }
+
+  /* success state */
+  .success-msg {
+    display: none; align-items: center; gap: 10px;
+    background: rgba(77,175,90,0.12);
+    border: 1px solid rgba(77,175,90,0.3);
+    border-radius: 12px; padding: 1rem 1.25rem;
+    font-size: 0.95rem; color: var(--green-bright);
+    max-width: 480px;
+  }
+  .success-msg.show { display: flex; }
+
+  /* ── STATS ROW ── */
+  .stats {
+    margin-top: 4rem;
+    display: flex; gap: 3rem; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp .7s .65s forwards;
+  }
+  .stat-item {}
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.25rem; font-weight: 700;
+    color: var(--cream); line-height: 1;
+  }
+  .stat-num span { color: var(--green-bright); }
+  .stat-label {
+    font-size: 0.8rem; font-weight: 400;
+    color: var(--text-muted); margin-top: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── BG DECORATION ── */
+  .bg-circle {
+    position: fixed; border-radius: 50%;
+    pointer-events: none; z-index: 0;
+  }
+  .bg-c1 {
+    width: 700px; height: 700px;
+    top: -200px; right: -200px;
+    background: radial-gradient(circle, rgba(45,106,53,0.18) 0%, transparent 70%);
+  }
+  .bg-c2 {
+    width: 500px; height: 500px;
+    bottom: 0; left: -150px;
+    background: radial-gradient(circle, rgba(77,175,90,0.1) 0%, transparent 70%);
+  }
+
+  /* ── HOW IT WORKS ── */
+  .section {
+    padding: 6rem 2rem;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .section-eyebrow {
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--green-bright);
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700; line-height: 1.15;
+    letter-spacing: -0.02em; margin-bottom: 3.5rem;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5px;
+    background: rgba(77,175,90,0.12);
+    border: 1px solid rgba(77,175,90,0.12);
+    border-radius: 16px; overflow: hidden;
+  }
+  .step {
+    background: var(--green-dark);
+    padding: 2rem 1.75rem;
+    transition: background .2s;
+  }
+  .step:hover { background: rgba(45,106,53,0.2); }
+  .step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem; font-weight: 900;
+    color: rgba(77,175,90,0.2); line-height: 1;
+    margin-bottom: 1.25rem;
+  }
+  .step h3 {
+    font-size: 1.05rem; font-weight: 500;
+    margin-bottom: 0.6rem; color: var(--cream);
+  }
+  .step p { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+
+  /* ── TRADES GRID ── */
+  .trades {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px; margin-top: 2.5rem;
+  }
+  .trade-pill {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0.85rem 1rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(77,175,90,0.15);
+    border-radius: 10px; font-size: 0.875rem;
+    color: var(--text-light);
+    transition: border-color .2s, background .2s;
+    cursor: default;
+  }
+  .trade-pill:hover {
+    border-color: rgba(77,175,90,0.4);
+    background: rgba(77,175,90,0.07);
+    color: var(--cream);
+  }
+  .trade-icon { font-size: 1.25rem; }
+
+  /* ── CITIES ── */
+  .cities-strip {
+    background: var(--green-mid);
+    border-top: 1px solid rgba(77,175,90,0.12);
+    border-bottom: 1px solid rgba(77,175,90,0.12);
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+  .cities-strip p {
+    font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 1.5rem;
+  }
+  .cities-list {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;
+  }
+  .city-tag {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--cream); opacity: 0.5;
+    transition: opacity .2s;
+    cursor: default;
+  }
+  .city-tag:hover { opacity: 1; }
+  .city-sep { color: var(--green-accent); opacity: 0.4; align-self: center; }
+
+  /* ── CONTRACTOR CTA ── */
+  .contractor-cta {
+    background: var(--green-mid);
+    border: 1px solid rgba(77,175,90,0.2);
+    border-radius: 20px;
+    padding: 3.5rem; margin: 0 2rem;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .contractor-cta h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700; line-height: 1.2;
+    max-width: 400px;
+  }
+  .contractor-cta p {
+    font-size: 0.9rem; color: var(--text-muted);
+    margin-top: 0.75rem; line-height: 1.6; max-width: 380px;
+  }
+  .btn-outline {
+    display: inline-block;
+    border: 1.5px solid var(--green-bright);
+    color: var(--green-bright);
+    padding: 0.85rem 2rem; border-radius: 99px;
+    font-size: 0.9rem; font-weight: 500;
+    text-decoration: none;
+    transition: background .2s, color .2s;
+    white-space: nowrap;
+  }
+  .btn-outline:hover {
+    background: var(--green-bright); color: var(--green-dark);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 3rem 2rem 2rem;
+    max-width: 1100px; margin: 0 auto;
+    display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 1rem;
+    border-top: 1px solid rgba(77,175,90,0.1);
+    margin-top: 4rem;
+  }
+  footer .logo { font-size: 1.1rem; }
+  footer p { font-size: 0.8rem; color: var(--text-muted); }
+  footer a { color: var(--text-muted); text-decoration: none; font-size: 0.8rem; }
+  footer a:hover { color: var(--cream); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 600px) {
+    nav { padding: 1rem; }
+    .nav-links { gap: 1rem; }
+    .nav-links a:not(.nav-cta) { display: none; }
+    .hero { padding: 7rem 1.25rem 3rem; }
+    .stats { gap: 2rem; }
+    .contractor-cta { padding: 2rem; }
+    .section { padding: 4rem 1.25rem; }
+  }
+
+  /* install banner */
+  #install-banner {
+    display: none;
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+    background: var(--green-mid);
+    border: 1px solid rgba(77,175,90,0.3);
+    border-radius: 99px; padding: 0.75rem 1.5rem;
+    display: none; align-items: center; gap: 12px;
+    font-size: 0.875rem; color: var(--cream);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 200; white-space: nowrap;
+  }
+  #install-banner button {
+    background: var(--green-bright); border: none; cursor: pointer;
+    padding: 0.4rem 1rem; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 500; color: var(--green-dark);
+  }
+  #install-banner .dismiss {
+    background: none; color: var(--text-muted); padding: 0.4rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- BG decoration -->
+<div class="bg-circle bg-c1"></div>
+<div class="bg-circle bg-c2"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Trade<span>Find</span></div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#trades">Trades</a>
+    <a href="#contractors" class="nav-cta">List your business</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div style="position:relative;z-index:1;">
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span class="eyebrow-dot"></span>
+    Now live across the United States
+  </div>
+
+  <h1>Find <em>trusted</em> contractors near you — fast</h1>
+
+  <p class="hero-sub">
+    TradeFind connects homeowners with verified local contractors and small businesses.
+    Plumbers, electricians, roofers, and more — all in one place, all with real contact details.
+  </p>
+
+  <div class="signup-block">
+    <div class="signup-label">Get early access — free forever</div>
+    <div class="signup-form" id="signupForm">
+      <input type="email" id="emailInput" placeholder="Enter your email address" />
+      <button onclick="handleSignup()">Notify me →</button>
+    </div>
+    <div class="success-msg" id="successMsg">
+      ✅ You're on the list! We'll notify you when TradeFind launches in your city.
+    </div>
+    <p class="signup-note">No spam. Unsubscribe anytime. 100% free for homeowners.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat-item">
+      <div class="stat-num">50<span>+</span></div>
+      <div class="stat-label">Cities at launch</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">12<span>+</span></div>
+      <div class="stat-label">Trade categories</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">0<span>$</span></div>
+      <div class="stat-label">Cost to search</div>
+    </div>
+  </div>
+</section>
+
+<!-- CITIES STRIP -->
+<div class="cities-strip">
+  <p>Launching across major US cities</p>
+  <div class="cities-list">
+    <span class="city-tag">New York</span><span class="city-sep">·</span>
+    <span class="city-tag">Los Angeles</span><span class="city-sep">·</span>
+    <span class="city-tag">Houston</span><span class="city-sep">·</span>
+    <span class="city-tag">Chicago</span><span class="city-sep">·</span>
+    <span class="city-tag">Phoenix</span><span class="city-sep">·</span>
+    <span class="city-tag">Dallas</span><span class="city-sep">·</span>
+    <span class="city-tag">Miami</span><span class="city-sep">·</span>
+    <span class="city-tag">Atlanta</span><span class="city-sep">·</span>
+    <span class="city-tag">Seattle</span><span class="city-sep">·</span>
+    <span class="city-tag">Denver</span>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-eyebrow">How it works</div>
+  <div class="section-title">Three steps to the<br />right contractor</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Search your area</h3>
+      <p>Enter your zip code or city. Instantly see verified contractors near you, filtered by trade and availability.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>Compare & choose</h3>
+      <p>View ratings, years of experience, services offered, and real contact details — all in one place.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Contact directly</h3>
+      <p>Call or email the contractor directly. No middlemen, no booking fees, no waiting for quotes.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h3>Leave a review</h3>
+      <p>After the job, share your experience to help your neighbours make better decisions.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TRADES -->
+<section class="section" id="trades">
+  <div class="section-eyebrow">Trades covered</div>
+  <div class="section-title">Every trade,<br />every city</div>
+  <div class="trades">
+    <div class="trade-pill"><span class="trade-icon">🔧</span> Plumbing</div>
+    <div class="trade-pill"><span class="trade-icon">⚡</span> Electrical</div>
+    <div class="trade-pill"><span class="trade-icon">🏠</span> Roofing</div>
+    <div class="trade-pill"><span class="trade-icon">🎨</span> Painting</div>
+    <div class="trade-pill"><span class="trade-icon">🌿</span> Landscaping</div>
+    <div class="trade-pill"><span class="trade-icon">❄️</span> HVAC</div>
+    <div class="trade-pill"><span class="trade-icon">🪵</span> Carpentry</div>
+    <div class="trade-pill"><span class="trade-icon">🧹</span> Cleaning</div>
+    <div class="trade-pill"><span class="trade-icon">🪟</span> Windows</div>
+    <div class="trade-pill"><span class="trade-icon">🏗️</span> General Contractor</div>
+    <div class="trade-pill"><span class="trade-icon">🚿</span> Bathroom Remodel</div>
+    <div class="trade-pill"><span class="trade-icon">🍳</span> Kitchen Remodel</div>
+  </div>
+</section>
+
+<!-- CONTRACTOR CTA -->
+<div style="max-width:1100px;margin:0 auto 4rem;" id="contractors">
+  <div class="contractor-cta">
+    <div>
+      <h2>Are you a contractor or small business owner?</h2>
+      <p>List your business on TradeFind for free. Get discovered by homeowners in your area who need your services right now.</p>
+    </div>
+    <a href="#" class="btn-outline" onclick="handleContractorSignup(event)">List your business free →</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">Trade<span>Find</span></div>
+  <p>© 2025 TradeFind. Built for homeowners across the US.</p>
+  <div style="display:flex;gap:1.5rem;">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Contact</a>
+  </div>
+</footer>
+</div>
+
+<!-- PWA Install Banner -->
+<div id="install-banner">
+  📲 Add TradeFind to your home screen
+  <button onclick="installApp()">Install</button>
+  <button class="dismiss" onclick="document.getElementById('install-banner').style.display='none'">✕</button>
+</div>
+
+<script>
+  // Email signup
+  function handleSignup() {
+    const email = document.getElementById('emailInput').value.trim();
+    if (!email || !email.includes('@')) {
+      document.getElementById('emailInput').style.borderBottom = '2px solid #E24B4A';
+      return;
+    }
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('successMsg').classList.add('show');
+    // TODO: POST email to your Supabase table or Mailchimp/ConvertKit API
+    console.log('Signup:', email);
+  }
+
+  document.getElementById('emailInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') handleSignup();
+  });
+
+  function handleContractorSignup(e) {
+    e.preventDefault();
+    alert("Thanks for your interest! We'll reach out with contractor onboarding details soon.");
+  }
+
+  // PWA install prompt
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-banner').style.display = 'flex';
+  });
+
+  function installApp() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+        document.getElementById('install-banner').style.display = 'none';
+      });
+    }
+  }
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.step, .trade-pill').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity .5s, transform .5s';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
