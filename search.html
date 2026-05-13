@@ -196,6 +196,10 @@ nav {
 
 <div class="search-hero">
   <div class="search-hero-inner">
+    <div id="locationBanner" style="display:none;background:rgba(77,175,90,0.08);border:1px solid rgba(77,175,90,0.2);border-radius:10px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.85rem;color:var(--text-light);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <span>📍 Allow location access to see distance to each contractor</span>
+      <button onclick="requestLocation()" style="background:var(--green-bright);border:none;border-radius:6px;padding:4px 12px;font-size:0.8rem;font-weight:500;color:var(--green-dark);cursor:pointer;">Allow</button>
+    </div>
     <h1>Find trusted contractors <span>near you</span></h1>
     <div class="search-bar">
       <input type="text" id="locationInput" placeholder="Enter zip code or city (e.g. 10001 or Houston)" />
@@ -234,6 +238,7 @@ nav {
   <div class="results-meta">
     <div class="results-count" id="resultsCount">Enter a location to find contractors</div>
     <select class="sort-select" id="sortSelect" onchange="renderResults()">
+      <option value="nearest">Nearest first</option>
       <option value="newest">Newest first</option>
       <option value="exp_high">Most experienced</option>
       <option value="exp_low">Least experienced</option>
@@ -307,10 +312,80 @@ function applyFilters(list) {
 function applySort(list) {
   const sort = document.getElementById('sortSelect').value;
   return [...list].sort((a,b) => {
+    if (sort === 'nearest') {
+      if (a._distance == null && b._distance == null) return 0;
+      if (a._distance == null) return 1;
+      if (b._distance == null) return -1;
+      return a._distance - b._distance;
+    }
     if (sort === 'exp_high') return (b.years_experience||0) - (a.years_experience||0);
     if (sort === 'exp_low') return (a.years_experience||0) - (b.years_experience||0);
     return new Date(b.created_at) - new Date(a.created_at);
   });
+}
+
+// User location
+let userLat = null, userLng = null;
+const zipCache = {};
+
+function getUserLocation() {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) { resolve(false); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => { userLat = pos.coords.latitude; userLng = pos.coords.longitude; resolve(true); },
+      () => resolve(false),
+      { timeout: 6000 }
+    );
+  });
+}
+
+async function getZipCoords(zip) {
+  if (zipCache[zip]) return zipCache[zip];
+  try {
+    const res = await fetch(`https://api.zippopotam.us/us/${zip}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const coords = { lat: parseFloat(data.places[0].latitude), lng: parseFloat(data.places[0].longitude) };
+    zipCache[zip] = coords;
+    return coords;
+  } catch { return null; }
+}
+
+function haversineDistance(lat1, lng1, lat2, lng2) {
+  const R = 3958.8; // miles
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLng = (lng2-lng1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function distanceLabel(miles) {
+  if (miles < 1) return `${Math.round(miles * 5280 / 100) * 100} ft away`;
+  return `${miles.toFixed(1)} mi away`;
+}
+
+async function enrichWithDistance(data) {
+  if (userLat === null) return data;
+  const enriched = await Promise.all(data.map(async c => {
+    if (c.lat && c.lng) {
+      c._distance = haversineDistance(userLat, userLng, c.lat, c.lng);
+      return c;
+    }
+    const primaryZip = (c.zip_codes||[])[0];
+    if (!primaryZip) return c;
+    const coords = await getZipCoords(primaryZip);
+    if (!coords) return c;
+    // Save coords back to Supabase for future use
+    fetch(`${SUPABASE_URL}/rest/v1/contractors?id=eq.${c.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type':'application/json', 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}`, 'Prefer':'return=minimal' },
+      body: JSON.stringify({ lat: coords.lat, lng: coords.lng })
+    });
+    c.lat = coords.lat; c.lng = coords.lng;
+    c._distance = haversineDistance(userLat, userLng, coords.lat, coords.lng);
+    return c;
+  }));
+  return enriched;
 }
 
 async function doSearch() {
@@ -321,6 +396,9 @@ async function doSearch() {
   list.innerHTML = `<div class="state-box"><div class="spinner"></div><p>Finding contractors...</p></div>`;
   document.getElementById('resultsCount').textContent = 'Searching...';
 
+  // Get user location if not already done
+  if (userLat === null) await getUserLocation();
+
   try {
     let url = `${SUPABASE_URL}/rest/v1/contractors?select=*&order=created_at.desc`;
     if (trade) url += `&trade=ilike.*${encodeURIComponent(trade)}*`;
@@ -330,7 +408,6 @@ async function doSearch() {
     });
     let data = await res.json();
 
-    // Filter by location (zip or city in description/zip_codes)
     if (loc) {
       const q = loc.toLowerCase();
       data = data.filter(c => {
@@ -341,6 +418,8 @@ async function doSearch() {
       });
     }
 
+    // Enrich with distance
+    data = await enrichWithDistance(data);
     allResults = data;
     renderResults();
   } catch(e) {
@@ -419,6 +498,7 @@ function renderResults() {
           <div class="c-trade">${c.trade || 'General Contractor'} · ${c.years_experience || 0} yrs experience</div>
           <div class="c-meta">
             <span>📍 Serves: ${(c.zip_codes || []).slice(0,3).join(', ')}${(c.zip_codes||[]).length > 3 ? ' +more' : ''}</span>
+            ${c._distance != null ? `<span>📏 ${distanceLabel(c._distance)}</span>` : ''}
             <span>📅 Joined ${new Date(c.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'})}</span>
           </div>
           ${c.working_hours ? `<div style="margin-bottom:8px;">${hoursCardBadge(c.working_hours)}</div>` : ''}
@@ -457,6 +537,7 @@ function openModal(id) {
           <div class="modal-row"><span class="modal-row-label">Email</span><span class="modal-row-val"><a href="mailto:${c.email}">${c.email || '—'}</a></span></div>
           ${c.website ? `<div class="modal-row"><span class="modal-row-label">Website</span><span class="modal-row-val"><a href="https://${c.website.replace(/^https?:\/\//,'')}" target="_blank">${c.website}</a></span></div>` : ''}
           <div class="modal-row"><span class="modal-row-label">Experience</span><span class="modal-row-val">${c.years_experience || 0} years</span></div>
+          ${c._distance != null ? `<div class="modal-row"><span class="modal-row-label">Distance</span><span class="modal-row-val">📏 ${distanceLabel(c._distance)}</span></div>` : ''}
           <div class="modal-row"><span class="modal-row-label">Areas</span><span class="modal-row-val">${(c.zip_codes||[]).join(', ') || '—'}</span></div>
           ${(c.services||[]).length ? `<div class="modal-row"><span class="modal-row-label">Services</span><span class="modal-row-val">${(c.services||[]).join(', ')}</span></div>` : ''}
           ${hoursModalRows(c.working_hours)}
@@ -482,6 +563,18 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2000);
 }
+
+async function requestLocation() {
+  document.getElementById('locationBanner').style.display = 'none';
+  const got = await getUserLocation();
+  if (got) { showToast('📍 Location found — showing distances!'); doSearch(); }
+  else showToast('Location not available');
+}
+
+// Show banner if location not granted
+navigator.permissions && navigator.permissions.query({name:'geolocation'}).then(p => {
+  if (p.state === 'prompt') document.getElementById('locationBanner').style.display = 'flex';
+});
 
 // Auto search if URL has params
 const params = new URLSearchParams(window.location.search);
