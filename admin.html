@@ -289,7 +289,7 @@ function renderReviews(list) {
   document.getElementById('reviewsCount').textContent = `${list.length} review${list.length!==1?'s':''}`;
   const tbody = document.getElementById('reviewsTbody');
   if (!list.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="6">No reviews yet</td></tr>`; return; }
-  tbody.innerHTML = list.map(r => {
+  tbody.innerHTML = list.map((r,i) => {
     const c = contractors.find(x => x.id === r.contractor_id);
     return `<tr>
       <td class="td-name">${r.reviewer_name}</td>
@@ -297,9 +297,17 @@ function renderReviews(list) {
       <td class="td-muted" style="max-width:240px;">${r.review_text}</td>
       <td class="td-muted">${c ? c.biz_name : '—'}</td>
       <td class="td-muted">${new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
-      <td><button class="del-btn" onclick="confirmDelete('${r.id}','this review','reviews')">Delete</button></td>
+      <td><button class="del-btn" data-index="${i}" data-table="reviews">Delete</button></td>
     </tr>`;
   }).join('');
+
+  tbody.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = parseInt(btn.getAttribute('data-index'));
+      const r = list[i];
+      confirmDelete(r.id, `review by ${r.reviewer_name}`, 'reviews');
+    });
+  });
 }
 
 function filterReviews(q) {
@@ -346,7 +354,7 @@ function renderContractors(list) {
     tbody.innerHTML = `<tr class="empty-row"><td colspan="8">No contractors yet</td></tr>`;
     return;
   }
-  tbody.innerHTML = list.map(c => `
+  tbody.innerHTML = list.map((c,i) => `
     <tr>
       <td>
         <div class="td-name">${c.biz_name || '—'}</div>
@@ -362,9 +370,21 @@ function renderContractors(list) {
       <td class="td-muted">${c.years_experience||0} yrs</td>
       <td><span class="td-badge ${badgeClass(c.availability)}">${badgeLabel(c.availability)}</span></td>
       <td class="td-muted">${new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
-      <td><a href="contractor.html?id=${c.id}" target="_blank" style="font-size:0.78rem;color:var(--green-bright);text-decoration:none;">View ↗</a> <button class="del-btn" onclick="confirmDelete('${c.id}','${(c.biz_name||'').replace(/'/g,"\\'")}','contractors')">Delete</button></td>
+      <td>
+        <a href="contractor.html?id=${c.id}" target="_blank" style="font-size:0.78rem;color:var(--green-bright);text-decoration:none;">View ↗</a>
+        <button class="del-btn" data-index="${i}" data-table="contractors">Delete</button>
+      </td>
     </tr>
   `).join('');
+
+  // Attach delete listeners using index into contractors array
+  tbody.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = parseInt(btn.getAttribute('data-index'));
+      const c = list[i];
+      confirmDelete(c.id, c.biz_name || 'this contractor', 'contractors');
+    });
+  });
 }
 
 function renderLeads(list) {
@@ -374,16 +394,24 @@ function renderLeads(list) {
     tbody.innerHTML = `<tr class="empty-row"><td colspan="3">No email leads yet</td></tr>`;
     return;
   }
-  tbody.innerHTML = list.map(l => `
+  tbody.innerHTML = list.map((l,i) => `
     <tr>
       <td class="td-name">${l.email}</td>
       <td class="td-muted">${new Date(l.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
       <td>
         <button class="copy-btn" onclick="copy('${l.email}','Email')">Copy</button>
-        <button class="del-btn" onclick="confirmDelete('${l.id}','${l.email}','leads')">Delete</button>
+        <button class="del-btn" data-index="${i}" data-table="leads">Delete</button>
       </td>
     </tr>
   `).join('');
+
+  tbody.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = parseInt(btn.getAttribute('data-index'));
+      const l = list[i];
+      confirmDelete(l.id, l.email, 'leads');
+    });
+  });
 }
 
 function renderBreakdown(tradeCounts) {
