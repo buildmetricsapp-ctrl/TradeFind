@@ -240,7 +240,7 @@ const SUPABASE_URL = 'https://vkpiyahchpntarsoncwn.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrcGl5YWhjaHBudGFyc29uY3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTM3NTUsImV4cCI6MjA5NDIyOTc1NX0.gAEvO76tPVR8gOLjCxc0I1ojFQL4Wo7DWpwFQn9m9a8';
 
 // ⚠️ CHANGE THIS PASSWORD before deploying!
-const ADMIN_PASSWORD = '6362133_Admin@2026';
+const ADMIN_PASSWORD = 'TradeFind@Admin2025';
 
 let contractors = [];
 let leads = [];
@@ -463,12 +463,27 @@ function confirmDelete(id, name, table) {
 
 async function doDelete(id, table) {
   document.getElementById('confirmDialog').style.display = 'none';
-  await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
-    method: 'DELETE',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Prefer': 'return=minimal' }
-  });
-  showToast('Record deleted');
-  loadData();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer': 'return=minimal'
+      }
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('Delete failed:', err);
+      showToast('Delete failed — check console');
+      return;
+    }
+    showToast('Record deleted ✓');
+    loadData();
+  } catch(e) {
+    console.error('Delete error:', e);
+    showToast('Delete failed — try again');
+  }
 }
 </script>
 </body>
