@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>List Your Business — TradeFind</title>
+<meta name="description" content="Join TradeFind and get discovered by homeowners in your area. Free to list your contracting business." />
+<meta name="theme-color" content="#0D1F0F" />
+<link rel="manifest" href="manifest.json" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green-dark: #0D1F0F;
+  --green-mid: #1A3D1E;
+  --green-accent: #2D6A35;
+  --green-bright: #4CAF5A;
+  --cream: #F5F0E8;
+  --cream-dim: #E8E2D4;
+  --amber: #E8A020;
+  --text-light: #C8D8C9;
+  --text-muted: #7A9B7D;
+  --red: #E24B4A;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--green-dark); color: var(--cream); min-height: 100vh; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 2rem;
+  background: rgba(13,31,15,0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(77,175,90,0.12);
+}
+.logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 900; color: var(--cream); text-decoration: none; letter-spacing: -0.02em; }
+.logo span { color: var(--green-bright); }
+.nav-back { font-size: 0.85rem; color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color .2s; }
+.nav-back:hover { color: var(--cream); }
+
+/* LAYOUT */
+.page { max-width: 860px; margin: 0 auto; padding: 7rem 2rem 4rem; display: grid; grid-template-columns: 1fr 340px; gap: 3rem; align-items: start; }
+@media (max-width: 720px) { .page { grid-template-columns: 1fr; padding: 6rem 1.25rem 3rem; } .sidebar { display: none; } }
+
+/* FORM SIDE */
+.form-head { margin-bottom: 2rem; }
+.form-eyebrow { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green-bright); margin-bottom: 0.75rem; }
+.form-head h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 2.75rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; }
+.form-head p { font-size: 0.95rem; color: var(--text-muted); margin-top: 0.75rem; line-height: 1.6; }
+
+/* STEPS INDICATOR */
+.steps-indicator { display: flex; align-items: center; gap: 0; margin-bottom: 2.5rem; }
+.step-dot { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted); }
+.step-dot.active { color: var(--green-bright); }
+.step-dot.done { color: var(--text-muted); }
+.dot { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid rgba(77,175,90,0.25); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500; flex-shrink: 0; }
+.step-dot.active .dot { background: var(--green-bright); border-color: var(--green-bright); color: var(--green-dark); }
+.step-dot.done .dot { background: rgba(77,175,90,0.15); border-color: rgba(77,175,90,0.3); color: var(--green-bright); }
+.step-line { flex: 1; height: 1px; background: rgba(77,175,90,0.15); margin: 0 8px; }
+
+/* FORM SECTIONS */
+.form-section { display: none; }
+.form-section.active { display: block; animation: fadeUp .4s ease; }
+
+@keyframes fadeUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+
+.section-title { font-size: 1rem; font-weight: 500; color: var(--cream); margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(77,175,90,0.12); }
+
+.field { margin-bottom: 1.25rem; }
+.field label { display: block; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+.field input, .field select, .field textarea {
+  width: 100%; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(77,175,90,0.2);
+  border-radius: 10px; padding: 0.85rem 1rem;
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+  color: var(--cream); outline: none;
+  transition: border-color .2s, background .2s;
+}
+.field input::placeholder, .field textarea::placeholder { color: var(--text-muted); }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: rgba(77,175,90,0.5); background: rgba(255,255,255,0.07); }
+.field input.error, .field select.error { border-color: var(--red); }
+.field select option { background: var(--green-dark); color: var(--cream); }
+.field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 500px) { .field-row { grid-template-columns: 1fr; } }
+.field-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.4rem; }
+.field-error { font-size: 0.78rem; color: var(--red); margin-top: 0.4rem; display: none; }
+
+/* TRADE PILLS SELECTOR */
+.trade-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-top: 0.5rem; }
+.trade-option { padding: 0.65rem 0.75rem; border: 1px solid rgba(77,175,90,0.2); border-radius: 8px; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; transition: all .15s; text-align: center; user-select: none; }
+.trade-option:hover { border-color: rgba(77,175,90,0.4); color: var(--cream); }
+.trade-option.selected { background: rgba(77,175,90,0.15); border-color: var(--green-bright); color: var(--green-bright); font-weight: 500; }
+
+/* SERVICES TAGS */
+.tags-input-wrap { display: flex; flex-wrap: wrap; gap: 8px; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(77,175,90,0.2); border-radius: 10px; min-height: 52px; cursor: text; }
+.tags-input-wrap:focus-within { border-color: rgba(77,175,90,0.5); }
+.tag-item { background: rgba(77,175,90,0.15); border: 1px solid rgba(77,175,90,0.3); color: var(--green-bright); font-size: 0.82rem; padding: 4px 10px; border-radius: 99px; display: flex; align-items: center; gap: 6px; }
+.tag-item button { background: none; border: none; color: var(--green-bright); cursor: pointer; font-size: 14px; line-height: 1; padding: 0; }
+.tags-input { background: none; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--cream); min-width: 120px; flex: 1; }
+.tags-input::placeholder { color: var(--text-muted); }
+
+/* ZIP CODES */
+.zip-wrap { display: flex; gap: 8px; }
+.zip-wrap input { flex: 1; }
+.zip-wrap button { background: rgba(77,175,90,0.15); border: 1px solid rgba(77,175,90,0.3); color: var(--green-bright); border-radius: 10px; padding: 0 1rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; cursor: pointer; white-space: nowrap; transition: background .15s; }
+.zip-wrap button:hover { background: rgba(77,175,90,0.25); }
+.zip-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.zip-tag { background: rgba(255,255,255,0.06); border: 1px solid rgba(77,175,90,0.2); color: var(--text-light); font-size: 0.8rem; padding: 4px 10px; border-radius: 99px; display: flex; align-items: center; gap: 6px; }
+.zip-tag button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; padding: 0; }
+
+/* PHOTO UPLOAD */
+.upload-area { border: 1.5px dashed rgba(77,175,90,0.3); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; position: relative; }
+.upload-area:hover, .upload-area.dragover { border-color: rgba(77,175,90,0.6); background: rgba(77,175,90,0.05); }
+.upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.upload-area p { font-size: 0.875rem; color: var(--text-muted); }
+.upload-area span { color: var(--green-bright); }
+.preview-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--green-bright); margin: 0 auto 0.5rem; display: block; }
+
+/* EXPERIENCE SLIDER */
+.slider-wrap { display: flex; align-items: center; gap: 1rem; }
+.slider-wrap input[type=range] { flex: 1; accent-color: var(--green-bright); }
+.slider-val { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--green-bright); min-width: 60px; text-align: right; }
+
+/* BUTTONS */
+.form-actions { display: flex; gap: 12px; margin-top: 2rem; }
+.btn-next { flex: 1; background: var(--green-bright); border: none; border-radius: 10px; padding: 1rem; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; color: var(--green-dark); cursor: pointer; transition: background .15s, transform .1s; }
+.btn-next:hover { background: #5DC96C; transform: scale(1.01); }
+.btn-back { background: none; border: 1px solid rgba(77,175,90,0.25); border-radius: 10px; padding: 1rem 1.5rem; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--text-muted); cursor: pointer; transition: border-color .15s, color .15s; }
+.btn-back:hover { border-color: rgba(77,175,90,0.5); color: var(--cream); }
+
+/* SUCCESS */
+.success-screen { display: none; text-align: center; padding: 3rem 1rem; }
+.success-screen.show { display: block; animation: fadeUp .5s ease; }
+.success-icon { font-size: 4rem; margin-bottom: 1rem; }
+.success-screen h2 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; margin-bottom: 0.75rem; }
+.success-screen p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; max-width: 400px; margin: 0 auto 2rem; }
+.success-detail { background: rgba(77,175,90,0.08); border: 1px solid rgba(77,175,90,0.2); border-radius: 12px; padding: 1.25rem; text-align: left; max-width: 400px; margin: 0 auto 2rem; }
+.success-detail p { font-size: 0.875rem; color: var(--text-light); margin: 0; }
+.success-detail strong { color: var(--green-bright); }
+.btn-home { display: inline-block; background: var(--green-bright); color: var(--green-dark); border-radius: 99px; padding: 0.85rem 2rem; font-size: 0.95rem; font-weight: 500; text-decoration: none; }
+
+/* SIDEBAR */
+.sidebar { position: sticky; top: 7rem; }
+.sidebar-card { background: var(--green-mid); border: 1px solid rgba(77,175,90,0.15); border-radius: 16px; padding: 1.75rem; margin-bottom: 1rem; }
+.sidebar-card h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 1rem; }
+.benefit { display: flex; gap: 12px; margin-bottom: 1rem; align-items: flex-start; }
+.benefit-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(77,175,90,0.15); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
+.benefit-text p { font-size: 0.875rem; font-weight: 500; color: var(--cream); margin-bottom: 2px; }
+.benefit-text span { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+.testimonial { font-size: 0.875rem; color: var(--text-light); line-height: 1.6; font-style: italic; margin-bottom: 1rem; }
+.testimonial-author { display: flex; align-items: center; gap: 10px; }
+.t-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(77,175,90,0.2); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 500; color: var(--green-bright); }
+.t-name { font-size: 0.82rem; font-weight: 500; }
+.t-trade { font-size: 0.78rem; color: var(--text-muted); }
+
+/* BG */
+.bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+.bg-c1 { width: 600px; height: 600px; top: -100px; right: -200px; background: radial-gradient(circle, rgba(45,106,53,0.15) 0%, transparent 70%); }
+</style>
+</head>
+<body>
+
+<div class="bg-circle bg-c1"></div>
+
+<nav>
+  <a href="index.html" class="logo">Trade<span>Find</span></a>
+  <a href="index.html" class="nav-back">← Back to home</a>
+</nav>
+
+<div class="page" style="position:relative;z-index:1;">
+
+  <!-- FORM COLUMN -->
+  <div>
+    <div class="form-head">
+      <div class="form-eyebrow">For contractors & small businesses</div>
+      <h1>List your business — free</h1>
+      <p>Join hundreds of contractors getting discovered by homeowners across the US. Takes less than 3 minutes.</p>
+    </div>
+
+    <!-- STEPS -->
+    <div class="steps-indicator">
+      <div class="step-dot active" id="dot-1"><div class="dot">1</div> Business</div>
+      <div class="step-line"></div>
+      <div class="step-dot" id="dot-2"><div class="dot">2</div> Services</div>
+      <div class="step-line"></div>
+      <div class="step-dot" id="dot-3"><div class="dot">3</div> Profile</div>
+    </div>
+
+    <!-- STEP 1: Business Info -->
+    <div class="form-section active" id="step-1">
+      <div class="section-title">Business information</div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Business name *</label>
+          <input type="text" id="bizName" placeholder="e.g. Singh & Sons Plumbing" />
+          <div class="field-error" id="err-bizName">Please enter your business name</div>
+        </div>
+        <div class="field">
+          <label>Owner / contact name *</label>
+          <input type="text" id="ownerName" placeholder="Your full name" />
+          <div class="field-error" id="err-ownerName">Please enter your name</div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Email address *</label>
+          <input type="email" id="email" placeholder="you@yourbusiness.com" />
+          <div class="field-error" id="err-email">Please enter a valid email</div>
+        </div>
+        <div class="field">
+          <label>Phone number *</label>
+          <input type="tel" id="phone" placeholder="+1 (555) 000-0000" />
+          <div class="field-error" id="err-phone">Please enter your phone number</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Website (optional)</label>
+        <input type="url" id="website" placeholder="https://yourbusiness.com" />
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-next" onclick="goToStep(2)">Continue → Services</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Services -->
+    <div class="form-section" id="step-2">
+      <div class="section-title">Trade & services</div>
+
+      <div class="field">
+        <label>Primary trade *</label>
+        <div class="trade-grid" id="tradeGrid">
+          <div class="trade-option" onclick="selectTrade(this)">🔧 Plumbing</div>
+          <div class="trade-option" onclick="selectTrade(this)">⚡ Electrical</div>
+          <div class="trade-option" onclick="selectTrade(this)">🏠 Roofing</div>
+          <div class="trade-option" onclick="selectTrade(this)">🎨 Painting</div>
+          <div class="trade-option" onclick="selectTrade(this)">🌿 Landscaping</div>
+          <div class="trade-option" onclick="selectTrade(this)">❄️ HVAC</div>
+          <div class="trade-option" onclick="selectTrade(this)">🪵 Carpentry</div>
+          <div class="trade-option" onclick="selectTrade(this)">🧹 Cleaning</div>
+          <div class="trade-option" onclick="selectTrade(this)">🪟 Windows</div>
+          <div class="trade-option" onclick="selectTrade(this)">🏗️ General</div>
+          <div class="trade-option" onclick="selectTrade(this)">🚿 Bathroom</div>
+          <div class="trade-option" onclick="selectTrade(this)">🍳 Kitchen</div>
+        </div>
+        <div class="field-error" id="err-trade">Please select your primary trade</div>
+      </div>
+
+      <div class="field" style="margin-top:1.5rem;">
+        <label>Specific services offered *</label>
+        <div class="tags-input-wrap" id="tagsWrap" onclick="document.getElementById('tagInput').focus()">
+          <input class="tags-input" id="tagInput" placeholder="Type a service and press Enter…" />
+        </div>
+        <div class="field-hint">e.g. Leak repair, Water heater install, Drain cleaning</div>
+        <div class="field-error" id="err-tags">Please add at least one service</div>
+      </div>
+
+      <div class="field">
+        <label>Service areas (zip codes) *</label>
+        <div class="zip-wrap">
+          <input type="text" id="zipInput" placeholder="Enter zip code" maxlength="5" />
+          <button onclick="addZip()">+ Add</button>
+        </div>
+        <div class="zip-tags" id="zipTags"></div>
+        <div class="field-error" id="err-zip">Please add at least one service area</div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-back" onclick="goToStep(1)">← Back</button>
+        <button class="btn-next" onclick="goToStep(3)">Continue → Profile</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Profile -->
+    <div class="form-section" id="step-3">
+      <div class="section-title">Your profile</div>
+
+      <div class="field">
+        <label>Years in business *</label>
+        <div class="slider-wrap">
+          <input type="range" min="1" max="40" value="5" id="yearsSlider" oninput="document.getElementById('yearsVal').textContent=this.value+' yrs'" step="1" />
+          <div class="slider-val" id="yearsVal">5 yrs</div>
+        </div>
+        <div class="field-hint">Drag to set how long you've been operating</div>
+      </div>
+
+      <div class="field">
+        <label>Business description</label>
+        <textarea id="description" placeholder="Tell homeowners what makes your business stand out. What areas do you serve? What's your specialty?"></textarea>
+        <div class="field-hint">A good description gets 3× more enquiries</div>
+      </div>
+
+      <div class="field">
+        <label>Logo or profile photo</label>
+        <div class="upload-area" id="uploadArea">
+          <input type="file" accept="image/*" onchange="handlePhoto(this)" />
+          <div id="uploadPrompt">
+            <div class="upload-icon">📷</div>
+            <p><span>Click to upload</span> or drag & drop</p>
+            <p style="font-size:0.78rem;margin-top:4px;">PNG, JPG up to 5MB</p>
+          </div>
+          <div id="uploadPreview" style="display:none;">
+            <img id="previewImg" class="preview-img" src="" alt="Preview" />
+            <p style="font-size:0.82rem;color:var(--green-bright);">Photo uploaded ✓</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Availability status</label>
+        <select id="availability">
+          <option value="available">✅ Available — accepting new jobs</option>
+          <option value="busy">🟡 Busy — limited availability</option>
+          <option value="booked">🔴 Fully booked right now</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-back" onclick="goToStep(2)">← Back</button>
+        <button class="btn-next" onclick="submitForm()">🚀 Go live now — it's free</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">🎉</div>
+      <h2>You're live on TradeFind!</h2>
+      <p>Your business is now visible to homeowners searching for contractors in your service areas.</p>
+      <div class="success-detail">
+        <p><strong id="s-bizName"></strong></p>
+        <p id="s-trade" style="margin-top:4px;"></p>
+        <p id="s-areas" style="margin-top:4px;"></p>
+        <p style="margin-top:8px;font-size:0.8rem;">A confirmation has been sent to <strong id="s-email"></strong></p>
+      </div>
+      <a href="index.html" class="btn-home">← Back to TradeFind</a>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-card">
+      <h3>Why list on TradeFind?</h3>
+      <div class="benefit">
+        <div class="benefit-icon">🎯</div>
+        <div class="benefit-text">
+          <p>Targeted visibility</p>
+          <span>Homeowners in your exact zip codes find you first</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-icon">💸</div>
+        <div class="benefit-text">
+          <p>Free to list</p>
+          <span>No upfront cost. Basic listing is always free</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-icon">📱</div>
+        <div class="benefit-text">
+          <p>Mobile-first</p>
+          <span>Most homeowners search on their phones — we're built for that</span>
+        </div>
+      </div>
+      <div class="benefit">
+        <div class="benefit-icon">⭐</div>
+        <div class="benefit-text">
+          <p>Verified reviews</p>
+          <span>Build your reputation with real customer reviews</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="testimonial">"Listed my plumbing business in 3 minutes. Got my first call the same week. Couldn't be easier."</p>
+      <div class="testimonial-author">
+        <div class="t-avatar">RS</div>
+        <div>
+          <div class="t-name">Raj Singh</div>
+          <div class="t-trade">Plumber · Houston, TX</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let selectedTrade = '';
+let serviceTags = [];
+let zipCodes = [];
+let currentStep = 1;
+
+// Step navigation
+function goToStep(n) {
+  if (n > currentStep && !validateStep(currentStep)) return;
+  document.getElementById('step-' + currentStep).classList.remove('active');
+  currentStep = n;
+  document.getElementById('step-' + currentStep).classList.add('active');
+  updateDots();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateDots() {
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById('dot-' + i);
+    dot.classList.remove('active', 'done');
+    if (i === currentStep) dot.classList.add('active');
+    else if (i < currentStep) dot.classList.add('done');
+  }
+}
+
+// Validation
+function validateStep(step) {
+  let valid = true;
+  if (step === 1) {
+    valid = checkField('bizName', 'err-bizName') && valid;
+    valid = checkField('ownerName', 'err-ownerName') && valid;
+    valid = checkEmail('email', 'err-email') && valid;
+    valid = checkField('phone', 'err-phone') && valid;
+  }
+  if (step === 2) {
+    if (!selectedTrade) { showErr('err-trade'); valid = false; } else hideErr('err-trade');
+    if (serviceTags.length === 0) { showErr('err-tags'); valid = false; } else hideErr('err-tags');
+    if (zipCodes.length === 0) { showErr('err-zip'); valid = false; } else hideErr('err-zip');
+  }
+  return valid;
+}
+
+function checkField(id, errId) {
+  const val = document.getElementById(id).value.trim();
+  if (!val) { showErr(errId); document.getElementById(id).classList.add('error'); return false; }
+  hideErr(errId); document.getElementById(id).classList.remove('error'); return true;
+}
+
+function checkEmail(id, errId) {
+  const val = document.getElementById(id).value.trim();
+  if (!val || !val.includes('@')) { showErr(errId); document.getElementById(id).classList.add('error'); return false; }
+  hideErr(errId); document.getElementById(id).classList.remove('error'); return true;
+}
+
+function showErr(id) { document.getElementById(id).style.display = 'block'; }
+function hideErr(id) { document.getElementById(id).style.display = 'none'; }
+
+// Trade selection
+function selectTrade(el) {
+  document.querySelectorAll('.trade-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTrade = el.textContent.trim();
+  hideErr('err-trade');
+}
+
+// Service tags
+document.getElementById('tagInput').addEventListener('keydown', function(e) {
+  if ((e.key === 'Enter' || e.key === ',') && this.value.trim()) {
+    e.preventDefault();
+    addTag(this.value.trim());
+    this.value = '';
+    hideErr('err-tags');
+  }
+  if (e.key === 'Backspace' && !this.value && serviceTags.length) {
+    removeTag(serviceTags.length - 1);
+  }
+});
+
+function addTag(text) {
+  if (serviceTags.includes(text)) return;
+  serviceTags.push(text);
+  renderTags();
+}
+
+function removeTag(i) {
+  serviceTags.splice(i, 1);
+  renderTags();
+}
+
+function renderTags() {
+  const wrap = document.getElementById('tagsWrap');
+  const input = document.getElementById('tagInput');
+  wrap.innerHTML = '';
+  serviceTags.forEach((t, i) => {
+    const tag = document.createElement('span');
+    tag.className = 'tag-item';
+    tag.innerHTML = `${t} <button onclick="removeTag(${i})">×</button>`;
+    wrap.appendChild(tag);
+  });
+  wrap.appendChild(input);
+  input.focus();
+}
+
+// Zip codes
+document.getElementById('zipInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { e.preventDefault(); addZip(); }
+});
+
+function addZip() {
+  const val = document.getElementById('zipInput').value.trim();
+  if (!val || zipCodes.includes(val)) return;
+  zipCodes.push(val);
+  document.getElementById('zipInput').value = '';
+  renderZips();
+  hideErr('err-zip');
+}
+
+function removeZip(i) { zipCodes.splice(i, 1); renderZips(); }
+
+function renderZips() {
+  const wrap = document.getElementById('zipTags');
+  wrap.innerHTML = zipCodes.map((z, i) => `<span class="zip-tag">📍 ${z} <button onclick="removeZip(${i})">×</button></span>`).join('');
+}
+
+// Photo upload
+function handlePhoto(input) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('previewImg').src = e.target.result;
+    document.getElementById('uploadPrompt').style.display = 'none';
+    document.getElementById('uploadPreview').style.display = 'block';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+// Drag & drop
+const ua = document.getElementById('uploadArea');
+ua.addEventListener('dragover', e => { e.preventDefault(); ua.classList.add('dragover'); });
+ua.addEventListener('dragleave', () => ua.classList.remove('dragover'));
+ua.addEventListener('drop', e => {
+  e.preventDefault(); ua.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) handlePhoto({ files: [file] });
+});
+
+// Submit
+function submitForm() {
+  if (!validateStep(3)) return;
+
+  const data = {
+    bizName: document.getElementById('bizName').value.trim(),
+    ownerName: document.getElementById('ownerName').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    website: document.getElementById('website').value.trim(),
+    trade: selectedTrade,
+    services: serviceTags,
+    zipCodes: zipCodes,
+    years: document.getElementById('yearsSlider').value,
+    description: document.getElementById('description').value.trim(),
+    availability: document.getElementById('availability').value,
+    createdAt: new Date().toISOString()
+  };
+
+  // TODO: POST to Supabase
+  // await supabase.from('contractors').insert([data]);
+  console.log('Contractor signup:', data);
+
+  // Show success
+  document.getElementById('step-3').classList.remove('active');
+  document.getElementById('successScreen').classList.add('show');
+  document.getElementById('s-bizName').textContent = data.bizName;
+  document.getElementById('s-trade').textContent = data.trade + ' · ' + data.years + ' years experience';
+  document.getElementById('s-areas').textContent = '📍 Serving: ' + data.zipCodes.join(', ');
+  document.getElementById('s-email').textContent = data.email;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
