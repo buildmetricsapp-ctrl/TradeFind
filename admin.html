@@ -163,6 +163,7 @@ tr:hover td { background: rgba(77,175,90,0.04); }
     <div class="tabs">
       <button class="tab active" onclick="switchTab('contractors',this)">Contractors</button>
       <button class="tab" onclick="switchTab('leads',this)">Email leads</button>
+      <button class="tab" onclick="switchTab('reviews',this)">Reviews</button>
       <button class="tab" onclick="switchTab('breakdown',this)">Trade breakdown</button>
     </div>
 
@@ -203,6 +204,22 @@ tr:hover td { background: rgba(77,175,90,0.04); }
             <tr><th>Email</th><th>Signed up</th><th></th></tr>
           </thead>
           <tbody id="leadsTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- REVIEWS TAB -->
+    <div id="tab-reviews" style="display:none;">
+      <div class="section-header">
+        <h2 id="reviewsCount">All reviews</h2>
+        <input class="search-input" placeholder="Search by name or review..." oninput="filterReviews(this.value)" />
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Reviewer</th><th>Rating</th><th>Review</th><th>Contractor</th><th>Date</th><th></th></tr>
+          </thead>
+          <tbody id="reviewsTbody"></tbody>
         </table>
       </div>
     </div>
@@ -255,7 +272,42 @@ if (sessionStorage.getItem('tf_admin')) {
 }
 
 async function loadData() {
-  await Promise.all([loadContractors(), loadLeads()]);
+  await Promise.all([loadContractors(), loadLeads(), loadReviews()]);
+}
+
+let reviews = [];
+
+async function loadReviews() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/reviews?select=*&order=created_at.desc`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  });
+  reviews = await res.json();
+  renderReviews(reviews);
+}
+
+function renderReviews(list) {
+  document.getElementById('reviewsCount').textContent = `${list.length} review${list.length!==1?'s':''}`;
+  const tbody = document.getElementById('reviewsTbody');
+  if (!list.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="6">No reviews yet</td></tr>`; return; }
+  tbody.innerHTML = list.map(r => {
+    const c = contractors.find(x => x.id === r.contractor_id);
+    return `<tr>
+      <td class="td-name">${r.reviewer_name}</td>
+      <td style="color:#E8A020;font-size:1rem;">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</td>
+      <td class="td-muted" style="max-width:240px;">${r.review_text}</td>
+      <td class="td-muted">${c ? c.biz_name : '—'}</td>
+      <td class="td-muted">${new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+      <td><button class="del-btn" onclick="confirmDelete('${r.id}','this review','reviews')">Delete</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterReviews(q) {
+  const filtered = reviews.filter(r =>
+    (r.reviewer_name||'').toLowerCase().includes(q.toLowerCase()) ||
+    (r.review_text||'').toLowerCase().includes(q.toLowerCase())
+  );
+  renderReviews(filtered);
 }
 
 async function loadContractors() {
@@ -363,7 +415,7 @@ function filterLeads(q) {
 }
 
 function switchTab(name, btn) {
-  ['contractors','leads','breakdown'].forEach(t => {
+  ['contractors','leads','reviews','breakdown'].forEach(t => {
     document.getElementById('tab-'+t).style.display = t===name ? 'block' : 'none';
   });
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
