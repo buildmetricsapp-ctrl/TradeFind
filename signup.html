@@ -575,6 +575,19 @@ async function submitForm() {
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error('Failed to save');
+
+  // Send email notification
+  try {
+    await fetch('https://vkpiyahchpntarsoncwn.supabase.co/functions/v1/notify-signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      },
+      body: JSON.stringify(data)
+    });
+  } catch(e) { console.log('Notification failed silently', e); }
+
   } catch(e) {
     console.error(e);
     btn.textContent = '🚀 Go live now — it\'s free';
