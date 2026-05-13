@@ -155,7 +155,15 @@ nav {
 .cta-card p { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.6; }
 .cta-card a { display: inline-block; background: var(--green-bright); color: var(--green-dark); border-radius: 99px; padding: 0.75rem 2rem; font-size: 0.9rem; font-weight: 500; text-decoration: none; }
 
-/* REVIEWS */
+/* WORKING HOURS */
+.hours-row-display { display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; padding: 5px 0; border-bottom: 1px solid rgba(77,175,90,0.06); }
+.hours-row-display:last-child { border-bottom: none; }
+.hours-day { color: var(--text-muted); width: 90px; }
+.hours-day.today { color: var(--green-bright); font-weight: 500; }
+.hours-time { color: var(--cream); }
+.hours-time.closed { color: var(--text-muted); font-style: italic; }
+.open-now-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; padding: 2px 8px; border-radius: 99px; background: rgba(59,109,17,0.2); color: #97C459; border: 1px solid rgba(59,109,17,0.3); margin-left: 8px; }
+.closed-now-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72px; padding: 2px 8px; border-radius: 99px; background: rgba(162,45,45,0.2); color: #F09595; border: 1px solid rgba(162,45,45,0.3); margin-left: 8px; font-size: 0.72rem; }
 .reviews-card {
   background: var(--green-mid); border: 1px solid rgba(77,175,90,0.15);
   border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
@@ -275,6 +283,12 @@ nav {
   <div class="services-card" id="servicesCard" style="display:none;">
     <div class="card-title">Services offered</div>
     <div class="services-grid" id="servicesList"></div>
+  </div>
+
+  <!-- WORKING HOURS -->
+  <div class="areas-card" id="hoursCard" style="display:none;">
+    <div class="card-title">Working hours</div>
+    <div id="hoursList" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:6px;"></div>
   </div>
 
   <!-- AREAS -->
@@ -545,6 +559,41 @@ function renderProfile(c) {
   if ((c.zip_codes||[]).length) {
     document.getElementById('areasCard').style.display = 'block';
     document.getElementById('zipList').innerHTML = c.zip_codes.map(z=>`<span class="zip-pill">📍 ${z}</span>`).join('');
+  }
+
+  // Working hours
+  if (c.working_hours && Object.keys(c.working_hours).length) {
+    document.getElementById('hoursCard').style.display = 'block';
+    const DAY_KEYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const DAY_NAMES = {Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'};
+    const now = new Date();
+    const todayKey = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.getDay()];
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+
+    document.getElementById('hoursList').innerHTML = DAY_KEYS.map(key => {
+      const val = c.working_hours[key];
+      const isToday = key === todayKey;
+      let timeStr = '', isOpen = false;
+
+      if (!val || val === 'off') {
+        timeStr = 'Closed';
+      } else {
+        const [start, end] = val.split('-');
+        const [sh, sm] = start.split(':').map(Number);
+        const [eh, em] = end.split(':').map(Number);
+        const startMins = sh*60+sm, endMins = eh*60+em;
+        const fmt = t => { const [h,m]=t.split(':'); const hr=parseInt(h); return `${hr>12?hr-12:hr||12}:${m} ${hr>=12?'PM':'AM'}`; };
+        timeStr = `${fmt(start)} – ${fmt(end)}`;
+        if (isToday) isOpen = nowMins >= startMins && nowMins < endMins;
+      }
+
+      const badge = isToday ? (val && val!=='off' ? (isOpen ? '<span class="open-now-badge">🟢 Open now</span>' : '<span class="closed-now-badge">🔴 Closed</span>') : '') : '';
+
+      return `<div class="hours-row-display">
+        <span class="hours-day${isToday?' today':''}">${DAY_NAMES[key]}${isToday?' ★':''}</span>
+        <span class="hours-time${(!val||val==='off')?' closed':''}">${timeStr}${badge}</span>
+      </div>`;
+    }).join('');
   }
 
   // Share URL

@@ -121,7 +121,16 @@ nav {
 .upload-area span { color: var(--green-bright); }
 .preview-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--green-bright); margin: 0 auto 0.5rem; display: block; }
 
-/* EXPERIENCE SLIDER */
+/* WORKING HOURS */
+.hours-row { display: grid; grid-template-columns: 90px 1fr; align-items: center; gap: 10px; padding: 8px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(77,175,90,0.12); border-radius: 8px; }
+.hours-row.closed { opacity: 0.45; }
+.day-toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+.day-toggle input[type=checkbox] { accent-color: var(--green-bright); width: 15px; height: 15px; cursor: pointer; }
+.hours-times { display: flex; align-items: center; gap: 6px; }
+.hours-times input[type=time] { background: rgba(255,255,255,0.05); border: 1px solid rgba(77,175,90,0.2); border-radius: 6px; padding: 5px 8px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--cream); outline: none; width: 100px; }
+.hours-times input[type=time]:disabled { opacity: 0.3; cursor: not-allowed; }
+.hours-times span { font-size: 0.78rem; color: var(--text-muted); }
+.closed-label { font-size: 0.78rem; color: var(--text-muted); }
 .slider-wrap { display: flex; align-items: center; gap: 1rem; }
 .slider-wrap input[type=range] { flex: 1; accent-color: var(--green-bright); }
 .slider-val { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--green-bright); min-width: 60px; text-align: right; }
@@ -323,6 +332,12 @@ nav {
         </select>
       </div>
 
+      <div class="field">
+        <label>Working hours</label>
+        <div class="field-hint" style="margin-bottom:0.75rem;">Set your hours for each day. Toggle a day off to mark it as closed.</div>
+        <div id="hoursGrid" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
       <div class="form-actions">
         <button class="btn-back" onclick="goToStep(2)">← Back</button>
         <button class="btn-next" onclick="submitForm()">🚀 Go live now — it's free</button>
@@ -397,6 +412,67 @@ let selectedTrade = '';
 let serviceTags = [];
 let zipCodes = [];
 let currentStep = 1;
+
+// Working hours setup
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const DEFAULT_HOURS = { Mon:'08:00-18:00', Tue:'08:00-18:00', Wed:'08:00-18:00', Thu:'08:00-18:00', Fri:'08:00-18:00', Sat:'09:00-14:00', Sun:'off' };
+const DAY_KEYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function buildHoursGrid() {
+  const grid = document.getElementById('hoursGrid');
+  grid.innerHTML = DAYS.map((day, i) => {
+    const key = DAY_KEYS[i];
+    const def = DEFAULT_HOURS[key];
+    const isOff = def === 'off';
+    const [start, end] = isOff ? ['08:00','18:00'] : def.split('-');
+    return `
+      <div class="hours-row${isOff?' closed':''}" id="row-${key}">
+        <label class="day-toggle">
+          <input type="checkbox" id="chk-${key}" ${isOff?'':'checked'} onchange="toggleDay('${key}')"/>
+          ${day.substring(0,3)}
+        </label>
+        <div class="hours-times" id="times-${key}">
+          <input type="time" id="start-${key}" value="${start}" ${isOff?'disabled':''} />
+          <span>to</span>
+          <input type="time" id="end-${key}" value="${end}" ${isOff?'disabled':''} />
+          ${isOff?'<span class="closed-label">Closed</span>':''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleDay(key) {
+  const chk = document.getElementById('chk-'+key);
+  const row = document.getElementById('row-'+key);
+  const startEl = document.getElementById('start-'+key);
+  const endEl = document.getElementById('end-'+key);
+  const timesEl = document.getElementById('times-'+key);
+  const isOpen = chk.checked;
+  row.classList.toggle('closed', !isOpen);
+  startEl.disabled = !isOpen;
+  endEl.disabled = !isOpen;
+  // toggle closed label
+  const existing = timesEl.querySelector('.closed-label');
+  if (!isOpen && !existing) {
+    const span = document.createElement('span');
+    span.className = 'closed-label'; span.textContent = 'Closed';
+    timesEl.appendChild(span);
+  } else if (isOpen && existing) { existing.remove(); }
+}
+
+function getWorkingHours() {
+  const hours = {};
+  DAY_KEYS.forEach(key => {
+    const chk = document.getElementById('chk-'+key);
+    if (!chk.checked) { hours[key] = 'off'; return; }
+    const start = document.getElementById('start-'+key).value;
+    const end = document.getElementById('end-'+key).value;
+    hours[key] = `${start}-${end}`;
+  });
+  return hours;
+}
+
+buildHoursGrid();
 
 // Step navigation
 function goToStep(n) {
@@ -556,7 +632,8 @@ async function submitForm() {
     zip_codes: zipCodes,
     years_experience: parseInt(document.getElementById('yearsSlider').value),
     description: document.getElementById('description').value.trim(),
-    availability: document.getElementById('availability').value
+    availability: document.getElementById('availability').value,
+    working_hours: getWorkingHours()
   };
 
   const btn = document.querySelector('#step-3 .btn-next');
