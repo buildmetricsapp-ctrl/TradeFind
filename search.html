@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Find Contractors — TradeFind</title>
+<meta name="description" content="Search for trusted local contractors and small businesses near you." />
+<meta name="theme-color" content="#0D1F0F" />
+<link rel="manifest" href="manifest.json" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green-dark: #0D1F0F;
+  --green-mid: #1A3D1E;
+  --green-accent: #2D6A35;
+  --green-bright: #4CAF5A;
+  --cream: #F5F0E8;
+  --text-light: #C8D8C9;
+  --text-muted: #7A9B7D;
+  --red: #E24B4A;
+  --amber: #E8A020;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--green-dark); color: var(--cream); min-height: 100vh; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 2rem;
+  background: rgba(13,31,15,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(77,175,90,0.12);
+}
+.logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 900; color: var(--cream); text-decoration: none; letter-spacing: -0.02em; }
+.logo span { color: var(--green-bright); }
+.nav-right { display: flex; align-items: center; gap: 1rem; }
+.nav-link { font-size: 0.85rem; color: var(--text-muted); text-decoration: none; transition: color .2s; }
+.nav-link:hover { color: var(--cream); }
+.nav-cta { background: var(--green-bright); color: var(--green-dark); padding: 0.5rem 1.1rem; border-radius: 99px; font-size: 0.85rem; font-weight: 500; text-decoration: none; transition: background .15s; }
+.nav-cta:hover { background: #5DC96C; }
+
+/* SEARCH HERO */
+.search-hero {
+  background: var(--green-mid);
+  border-bottom: 1px solid rgba(77,175,90,0.12);
+  padding: 5.5rem 2rem 1.75rem;
+}
+.search-hero-inner { max-width: 860px; margin: 0 auto; }
+.search-hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; margin-bottom: 1.25rem; }
+.search-hero h1 span { color: var(--green-bright); }
+
+/* SEARCH BAR */
+.search-bar {
+  display: flex; gap: 0;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(77,175,90,0.25);
+  border-radius: 12px; overflow: hidden;
+  margin-bottom: 1rem;
+  transition: border-color .2s;
+}
+.search-bar:focus-within { border-color: rgba(77,175,90,0.5); }
+.search-bar input {
+  flex: 1; background: none; border: none; outline: none;
+  padding: 0.9rem 1.25rem;
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--cream);
+}
+.search-bar input::placeholder { color: var(--text-muted); }
+.search-divider { width: 1px; background: rgba(77,175,90,0.2); margin: 0.5rem 0; }
+.search-bar select {
+  background: none; border: none; outline: none;
+  padding: 0.9rem 1rem; font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; color: var(--cream); cursor: pointer; min-width: 160px;
+}
+.search-bar select option { background: var(--green-dark); }
+.search-btn {
+  background: var(--green-bright); border: none; cursor: pointer;
+  padding: 0 1.5rem; font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; font-weight: 500; color: var(--green-dark);
+  transition: background .15s; white-space: nowrap;
+}
+.search-btn:hover { background: #5DC96C; }
+
+/* FILTERS ROW */
+.filters-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.filter-label { font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-right: 4px; }
+.filter-pill {
+  font-size: 0.8rem; padding: 5px 14px;
+  border-radius: 99px; border: 1px solid rgba(77,175,90,0.2);
+  background: transparent; color: var(--text-muted); cursor: pointer;
+  transition: all .15s; white-space: nowrap;
+}
+.filter-pill:hover { border-color: rgba(77,175,90,0.4); color: var(--cream); }
+.filter-pill.active { background: rgba(77,175,90,0.15); border-color: var(--green-bright); color: var(--green-bright); font-weight: 500; }
+
+/* MAIN LAYOUT */
+.main { max-width: 860px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
+@media (max-width: 600px) { .main { padding: 1.25rem; } }
+
+/* RESULTS META */
+.results-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 8px; }
+.results-count { font-size: 0.875rem; color: var(--text-muted); }
+.results-count strong { color: var(--cream); }
+.sort-select { background: rgba(255,255,255,0.05); border: 1px solid rgba(77,175,90,0.2); border-radius: 8px; padding: 6px 12px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--cream); outline: none; cursor: pointer; }
+.sort-select option { background: var(--green-dark); }
+
+/* CONTRACTOR LIST */
+.contractor-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* CONTRACTOR CARD */
+.c-card {
+  background: var(--green-mid);
+  border: 1px solid rgba(77,175,90,0.12);
+  border-radius: 14px; padding: 1.25rem 1.5rem;
+  transition: border-color .2s, transform .15s;
+  cursor: pointer;
+  text-decoration: none; display: block; color: inherit;
+}
+.c-card:hover { border-color: rgba(77,175,90,0.35); transform: translateY(-1px); }
+.c-card-inner { display: flex; gap: 1rem; align-items: flex-start; }
+.c-avatar { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 1rem; flex-shrink: 0; }
+.av-teal { background: #0F6E5620; color: #5DCAA5; border: 1px solid #0F6E5640; }
+.av-blue { background: #185FA520; color: #85B7EB; border: 1px solid #185FA540; }
+.av-amber { background: #854F0B20; color: #EF9F27; border: 1px solid #854F0B40; }
+.av-purple { background: #534AB720; color: #AFA9EC; border: 1px solid #534AB740; }
+.av-coral { background: #993C1D20; color: #F0997B; border: 1px solid #993C1D40; }
+.av-green { background: #3B6D1120; color: #97C459; border: 1px solid #3B6D1140; }
+.c-body { flex: 1; min-width: 0; }
+.c-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.c-name { font-size: 1rem; font-weight: 500; color: var(--cream); }
+.c-badge { font-size: 0.72rem; padding: 3px 10px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
+.badge-open { background: rgba(59,109,17,0.2); color: #97C459; border: 1px solid rgba(59,109,17,0.3); }
+.badge-busy { background: rgba(186,117,23,0.2); color: #EF9F27; border: 1px solid rgba(186,117,23,0.3); }
+.badge-booked { background: rgba(162,45,45,0.2); color: #F09595; border: 1px solid rgba(162,45,45,0.3); }
+.c-trade { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; }
+.c-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px; }
+.c-meta span { display: flex; align-items: center; gap: 5px; }
+.c-stars { color: var(--amber); letter-spacing: -1px; }
+.c-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.c-tag { font-size: 0.75rem; padding: 3px 10px; border-radius: 4px; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid rgba(77,175,90,0.1); }
+.c-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.c-btn { font-size: 0.82rem; padding: 7px 14px; border-radius: 8px; border: 1px solid rgba(77,175,90,0.25); background: transparent; color: var(--cream); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background .12s; font-family: 'DM Sans', sans-serif; text-decoration: none; }
+.c-btn:hover { background: rgba(77,175,90,0.1); }
+.c-btn.primary { background: rgba(77,175,90,0.15); border-color: rgba(77,175,90,0.4); color: var(--green-bright); }
+.c-btn.primary:hover { background: rgba(77,175,90,0.25); }
+.c-areas { font-size: 0.78rem; color: var(--text-muted); margin-top: 8px; }
+
+/* EMPTY / LOADING */
+.state-box { text-align: center; padding: 4rem 1rem; color: var(--text-muted); }
+.state-box .icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+.state-box h3 { font-size: 1.1rem; font-weight: 500; color: var(--cream); margin-bottom: 0.5rem; }
+.state-box p { font-size: 0.875rem; line-height: 1.6; }
+.spinner { width: 36px; height: 36px; border: 3px solid rgba(77,175,90,0.2); border-top-color: var(--green-bright); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 1rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* MODAL */
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem; backdrop-filter: blur(4px); }
+.modal { background: var(--green-mid); border: 1px solid rgba(77,175,90,0.2); border-radius: 16px; width: 100%; max-width: 480px; padding: 1.75rem; position: relative; max-height: 90vh; overflow-y: auto; }
+.modal-close { position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.06); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--text-muted); font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { background: rgba(255,255,255,0.1); color: var(--cream); }
+.modal-avatar { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 500; margin-bottom: 1rem; }
+.modal h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+.modal-trade { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px; }
+.modal-about { font-size: 0.875rem; color: var(--text-light); line-height: 1.7; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(77,175,90,0.12); }
+.modal-rows { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
+.modal-row { display: flex; align-items: center; gap: 10px; font-size: 0.875rem; }
+.modal-row-label { color: var(--text-muted); width: 90px; font-size: 0.8rem; flex-shrink: 0; }
+.modal-row-val { color: var(--cream); }
+.modal-row-val a { color: #85B7EB; text-decoration: none; }
+.modal-actions { display: flex; gap: 8px; }
+.modal-actions .c-btn { flex: 1; justify-content: center; }
+
+/* COPY TOAST */
+.toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: var(--green-mid); border: 1px solid rgba(77,175,90,0.3); border-radius: 99px; padding: 0.6rem 1.25rem; font-size: 0.85rem; color: var(--green-bright); opacity: 0; transition: opacity .2s; z-index: 300; pointer-events: none; white-space: nowrap; }
+.toast.show { opacity: 1; }
+
+/* BG */
+.bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+.bg-c1 { width: 500px; height: 500px; top: -100px; right: -150px; background: radial-gradient(circle, rgba(45,106,53,0.12) 0%, transparent 70%); }
+</style>
+</head>
+<body>
+
+<div class="bg-circle bg-c1"></div>
+
+<nav>
+  <a href="index.html" class="logo">Trade<span>Find</span></a>
+  <div class="nav-right">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="signup.html" class="nav-cta">List your business</a>
+  </div>
+</nav>
+
+<div class="search-hero">
+  <div class="search-hero-inner">
+    <h1>Find trusted contractors <span>near you</span></h1>
+    <div class="search-bar">
+      <input type="text" id="locationInput" placeholder="Enter zip code or city (e.g. 10001 or Houston)" />
+      <div class="search-divider"></div>
+      <select id="tradeSelect">
+        <option value="">All trades</option>
+        <option>Plumbing</option>
+        <option>Electrical</option>
+        <option>Roofing</option>
+        <option>Painting</option>
+        <option>Landscaping</option>
+        <option>HVAC</option>
+        <option>Carpentry</option>
+        <option>Cleaning</option>
+        <option>Windows</option>
+        <option>General</option>
+        <option>Bathroom</option>
+        <option>Kitchen</option>
+      </select>
+      <button class="search-btn" onclick="doSearch()">Search →</button>
+    </div>
+    <div class="filters-row">
+      <span class="filter-label">Availability:</span>
+      <button class="filter-pill active" onclick="setFilter('availability','all',this)">All</button>
+      <button class="filter-pill" onclick="setFilter('availability','available',this)">Available now</button>
+      <button class="filter-pill" onclick="setFilter('availability','busy',this)">Busy</button>
+      <span class="filter-label" style="margin-left:8px;">Experience:</span>
+      <button class="filter-pill active" onclick="setFilter('exp','all',this)">Any</button>
+      <button class="filter-pill" onclick="setFilter('exp','5',this)">5+ yrs</button>
+      <button class="filter-pill" onclick="setFilter('exp','10',this)">10+ yrs</button>
+    </div>
+  </div>
+</div>
+
+<div class="main" style="position:relative;z-index:1;">
+  <div class="results-meta">
+    <div class="results-count" id="resultsCount">Enter a location to find contractors</div>
+    <select class="sort-select" id="sortSelect" onchange="renderResults()">
+      <option value="newest">Newest first</option>
+      <option value="exp_high">Most experienced</option>
+      <option value="exp_low">Least experienced</option>
+    </select>
+  </div>
+
+  <div class="contractor-list" id="contractorList">
+    <div class="state-box">
+      <span class="icon">🔍</span>
+      <h3>Search for contractors</h3>
+      <p>Enter your zip code or city above to find trusted contractors in your area.</p>
+    </div>
+  </div>
+</div>
+
+<div id="modal" style="display:none;"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://vkpiyahchpntarsoncwn.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrcGl5YWhjaHBudGFyc29uY3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTM3NTUsImV4cCI6MjA5NDIyOTc1NX0.gAEvO76tPVR8gOLjCxc0I1ojFQL4Wo7DWpwFQn9m9a8';
+
+const AVATARS = ['av-teal','av-blue','av-amber','av-purple','av-coral','av-green'];
+const filters = { availability: 'all', exp: 'all' };
+let allResults = [];
+
+function initials(name) {
+  if (!name) return '??';
+  return name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
+}
+
+function avatarClass(id) {
+  const i = id ? id.charCodeAt(0) % AVATARS.length : 0;
+  return AVATARS[i];
+}
+
+function stars(n) {
+  const r = Math.min(5, Math.max(0, Math.round(n || 0)));
+  return '★'.repeat(r) + '☆'.repeat(5-r);
+}
+
+function badgeClass(a) {
+  if (!a || a === 'available') return 'badge-open';
+  if (a === 'busy') return 'badge-busy';
+  return 'badge-booked';
+}
+
+function badgeLabel(a) {
+  if (!a || a === 'available') return 'Available';
+  if (a === 'busy') return 'Busy';
+  return 'Fully booked';
+}
+
+function setFilter(key, val, btn) {
+  filters[key] = val;
+  btn.closest('.filters-row').querySelectorAll('.filter-pill').forEach(p => {
+    if (p.getAttribute('onclick') && p.getAttribute('onclick').includes(`'${key}'`)) p.classList.remove('active');
+  });
+  btn.classList.add('active');
+  renderResults();
+}
+
+function applyFilters(list) {
+  return list.filter(c => {
+    if (filters.availability !== 'all' && c.availability !== filters.availability) return false;
+    if (filters.exp !== 'all' && (c.years_experience || 0) < parseInt(filters.exp)) return false;
+    return true;
+  });
+}
+
+function applySort(list) {
+  const sort = document.getElementById('sortSelect').value;
+  return [...list].sort((a,b) => {
+    if (sort === 'exp_high') return (b.years_experience||0) - (a.years_experience||0);
+    if (sort === 'exp_low') return (a.years_experience||0) - (b.years_experience||0);
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+}
+
+async function doSearch() {
+  const loc = document.getElementById('locationInput').value.trim();
+  const trade = document.getElementById('tradeSelect').value;
+  const list = document.getElementById('contractorList');
+
+  list.innerHTML = `<div class="state-box"><div class="spinner"></div><p>Finding contractors...</p></div>`;
+  document.getElementById('resultsCount').textContent = 'Searching...';
+
+  try {
+    let url = `${SUPABASE_URL}/rest/v1/contractors?select=*&order=created_at.desc`;
+    if (trade) url += `&trade=ilike.*${encodeURIComponent(trade)}*`;
+
+    const res = await fetch(url, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    let data = await res.json();
+
+    // Filter by location (zip or city in description/zip_codes)
+    if (loc) {
+      const q = loc.toLowerCase();
+      data = data.filter(c => {
+        const zips = (c.zip_codes || []).join(' ').toLowerCase();
+        const desc = (c.description || '').toLowerCase();
+        const biz = (c.biz_name || '').toLowerCase();
+        return zips.includes(q) || desc.includes(q) || biz.includes(q);
+      });
+    }
+
+    allResults = data;
+    renderResults();
+  } catch(e) {
+    list.innerHTML = `<div class="state-box"><span class="icon">⚠️</span><h3>Something went wrong</h3><p>Please try again.</p></div>`;
+  }
+}
+
+function renderResults() {
+  const list = document.getElementById('contractorList');
+  let data = applyFilters(allResults);
+  data = applySort(data);
+
+  const loc = document.getElementById('locationInput').value.trim();
+  document.getElementById('resultsCount').innerHTML =
+    `<strong>${data.length}</strong> contractor${data.length !== 1 ? 's' : ''} found${loc ? ` near <strong>${loc}</strong>` : ''}`;
+
+  if (!data.length) {
+    list.innerHTML = `<div class="state-box"><span class="icon">😔</span><h3>No contractors found</h3><p>Try a different location or trade category. More contractors are joining every day!</p><br><a href="signup.html" style="color:var(--green-bright);font-size:0.875rem;">Know a contractor? Invite them to list →</a></div>`;
+    return;
+  }
+
+  list.innerHTML = data.map(c => `
+    <div class="c-card" onclick="openModal('${c.id}')">
+      <div class="c-card-inner">
+        <div class="c-avatar ${avatarClass(c.id)}">${initials(c.biz_name)}</div>
+        <div class="c-body">
+          <div class="c-top">
+            <div class="c-name">${c.biz_name || 'Unnamed Business'}</div>
+            <span class="c-badge ${badgeClass(c.availability)}">${badgeLabel(c.availability)}</span>
+          </div>
+          <div class="c-trade">${c.trade || 'General Contractor'} · ${c.years_experience || 0} yrs experience</div>
+          <div class="c-meta">
+            <span>📍 Serves: ${(c.zip_codes || []).slice(0,3).join(', ')}${(c.zip_codes||[]).length > 3 ? ' +more' : ''}</span>
+            <span>📅 Joined ${new Date(c.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'})}</span>
+          </div>
+          ${(c.services||[]).length ? `<div class="c-tags">${(c.services||[]).slice(0,4).map(s=>`<span class="c-tag">${s}</span>`).join('')}${(c.services||[]).length>4?`<span class="c-tag">+${(c.services||[]).length-4} more</span>`:''}</div>` : ''}
+          ${c.description ? `<div style="font-size:0.82rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">${c.description.substring(0,120)}${c.description.length>120?'…':''}</div>` : ''}
+          <div class="c-actions" onclick="event.stopPropagation()">
+            <button class="c-btn primary" onclick="copyText('${c.phone}','Phone number')">📞 ${c.phone || 'No phone'}</button>
+            <button class="c-btn" onclick="copyText('${c.email}','Email address')">✉️ Copy email</button>
+            ${c.website ? `<a class="c-btn" href="https://${c.website.replace(/^https?:\/\//,'')}" target="_blank">🌐 Website</a>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openModal(id) {
+  const c = allResults.find(x => x.id === id);
+  if (!c) return;
+  const m = document.getElementById('modal');
+  m.style.display = 'flex';
+  m.innerHTML = `
+    <div class="modal-bg" onclick="closeModal(event)">
+      <div class="modal">
+        <button class="modal-close" onclick="document.getElementById('modal').style.display='none'">✕</button>
+        <div class="modal-avatar ${avatarClass(c.id)}">${initials(c.biz_name)}</div>
+        <h2>${c.biz_name || 'Unnamed Business'}</h2>
+        <div class="modal-trade">
+          ${c.trade || 'General Contractor'}
+          <span class="c-badge ${badgeClass(c.availability)}">${badgeLabel(c.availability)}</span>
+        </div>
+        ${c.description ? `<div class="modal-about">${c.description}</div>` : ''}
+        <div class="modal-rows">
+          <div class="modal-row"><span class="modal-row-label">Owner</span><span class="modal-row-val">${c.owner_name || '—'}</span></div>
+          <div class="modal-row"><span class="modal-row-label">Phone</span><span class="modal-row-val"><a href="tel:${c.phone}">${c.phone || '—'}</a></span></div>
+          <div class="modal-row"><span class="modal-row-label">Email</span><span class="modal-row-val"><a href="mailto:${c.email}">${c.email || '—'}</a></span></div>
+          ${c.website ? `<div class="modal-row"><span class="modal-row-label">Website</span><span class="modal-row-val"><a href="https://${c.website.replace(/^https?:\/\//,'')}" target="_blank">${c.website}</a></span></div>` : ''}
+          <div class="modal-row"><span class="modal-row-label">Experience</span><span class="modal-row-val">${c.years_experience || 0} years</span></div>
+          <div class="modal-row"><span class="modal-row-label">Areas</span><span class="modal-row-val">${(c.zip_codes||[]).join(', ') || '—'}</span></div>
+          ${(c.services||[]).length ? `<div class="modal-row"><span class="modal-row-label">Services</span><span class="modal-row-val">${(c.services||[]).join(', ')}</span></div>` : ''}
+        </div>
+        <div class="modal-actions">
+          <button class="c-btn primary" onclick="copyText('${c.phone}','Phone number')">📞 Copy phone</button>
+          <button class="c-btn" onclick="copyText('${c.email}','Email address')">✉️ Copy email</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function closeModal(e) { if (e.target === e.currentTarget) document.getElementById('modal').style.display = 'none'; }
+
+function copyText(text, label) {
+  if (!text || text === 'null' || text === 'undefined') return;
+  navigator.clipboard.writeText(text).then(() => showToast(`${label} copied!`));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = '✓ ' + msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// Auto search if URL has params
+const params = new URLSearchParams(window.location.search);
+if (params.get('q')) { document.getElementById('locationInput').value = params.get('q'); doSearch(); }
+if (params.get('trade')) { document.getElementById('tradeSelect').value = params.get('trade'); }
+
+// Enter key triggers search
+document.getElementById('locationInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+// Load all on page open
+doSearch();
+</script>
+</body>
+</html>
