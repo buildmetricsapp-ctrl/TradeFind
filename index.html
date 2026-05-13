@@ -393,7 +393,7 @@
   <div class="nav-links">
     <a href="#how">How it works</a>
     <a href="#trades">Trades</a>
-    <a href="#contractors" class="nav-cta">List your business</a>
+    <a href="signup.html" class="nav-cta">List your business</a>
   </div>
 </nav>
 
@@ -512,7 +512,7 @@
       <h2>Are you a contractor or small business owner?</h2>
       <p>List your business on TradeFind for free. Get discovered by homeowners in your area who need your services right now.</p>
     </div>
-    <a href="#" class="btn-outline" onclick="handleContractorSignup(event)">List your business free →</a>
+    <a href="signup.html" class="btn-outline">List your business free →</a>
   </div>
 </div>
 
@@ -536,27 +536,40 @@
 </div>
 
 <script>
-  // Email signup
-  function handleSignup() {
+  const SUPABASE_URL = 'https://vkpiyahchpntarsonckwn.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrcGl5YWhjaHBudGFyc29uY3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTM3NTUsImV4cCI6MjA5NDIyOTc1NX0.gAEvO76tPVR8gOLjCxc0I1ojFQL4Wo7DWpwFQn9m9a8';
+
+  async function handleSignup() {
     const email = document.getElementById('emailInput').value.trim();
     if (!email || !email.includes('@')) {
-      document.getElementById('emailInput').style.borderBottom = '2px solid #E24B4A';
+      document.getElementById('emailInput').style.border = '1px solid #E24B4A';
       return;
+    }
+    const btn = document.querySelector('.signup-form button');
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ email })
+      });
+      if (!res.ok) throw new Error('Failed');
+    } catch(e) {
+      console.error(e);
     }
     document.getElementById('signupForm').style.display = 'none';
     document.getElementById('successMsg').classList.add('show');
-    // TODO: POST email to your Supabase table or Mailchimp/ConvertKit API
-    console.log('Signup:', email);
   }
 
   document.getElementById('emailInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') handleSignup();
   });
-
-  function handleContractorSignup(e) {
-    e.preventDefault();
-    alert("Thanks for your interest! We'll reach out with contractor onboarding details soon.");
-  }
 
   // PWA install prompt
   let deferredPrompt;
