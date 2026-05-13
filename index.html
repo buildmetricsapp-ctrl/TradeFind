@@ -348,11 +348,30 @@
     50% { opacity: 0.4; }
   }
 
+  /* ── HAMBURGER ── */
+  .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--cream); border-radius: 2px; transition: all .2s; }
+  .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+  .mobile-menu {
+    display: none; flex-direction: column;
+    position: fixed; top: 60px; left: 0; right: 0; z-index: 99;
+    background: rgba(13,31,15,0.98); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(77,175,90,0.15);
+    padding: 1.25rem 1.5rem; gap: 1rem;
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-size: 1rem; color: var(--text-light); text-decoration: none; padding: 0.5rem 0; border-bottom: 1px solid rgba(77,175,90,0.08); }
+  .mobile-menu a:last-child { border-bottom: none; }
+  .mobile-menu .mobile-cta { color: var(--green-bright); font-weight: 500; border-bottom: none; margin-top: 0.25rem; }
+
   /* ── MOBILE ── */
   @media (max-width: 600px) {
     nav { padding: 1rem; }
-    .nav-links { gap: 1rem; }
-    .nav-links a:not(.nav-cta) { display: none; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
     .hero { padding: 7rem 1.25rem 3rem; }
     .stats { gap: 2rem; }
     .contractor-cta { padding: 2rem; }
@@ -395,7 +414,15 @@
     <a href="search.html">Find contractors</a>
     <a href="signup.html" class="nav-cta">List your business</a>
   </div>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#how" onclick="closeMenu()">How it works</a>
+  <a href="search.html">Find contractors</a>
+  <a href="signup.html" class="mobile-cta">List your business free →</a>
+</div>
 
 <!-- HERO -->
 <div style="position:relative;z-index:1;">
@@ -536,6 +563,16 @@
 </div>
 
 <script>
+  function toggleMenu() {
+    document.getElementById('hamburger').classList.toggle('open');
+    document.getElementById('mobileMenu').classList.toggle('open');
+  }
+  function closeMenu() {
+    document.getElementById('hamburger').classList.remove('open');
+    document.getElementById('mobileMenu').classList.remove('open');
+  }
+
+  // Email signup
   const SUPABASE_URL = 'https://vkpiyahchpntarsoncwn.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrcGl5YWhjaHBudGFyc29uY3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTM3NTUsImV4cCI6MjA5NDIyOTc1NX0.gAEvO76tPVR8gOLjCxc0I1ojFQL4Wo7DWpwFQn9m9a8';
 
