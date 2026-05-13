@@ -445,7 +445,10 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2000);
 }
 
+let pendingDelete = null;
+
 function confirmDelete(id, name, table) {
+  pendingDelete = { id, table };
   const d = document.getElementById('confirmDialog');
   d.style.display = 'flex';
   d.innerHTML = `
@@ -454,14 +457,17 @@ function confirmDelete(id, name, table) {
         <h3>Delete this record?</h3>
         <p>"${name}" will be permanently removed from TradeFind.</p>
         <div class="confirm-actions">
-          <button class="btn-cancel" onclick="document.getElementById('confirmDialog').style.display='none'">Cancel</button>
-          <button class="btn-delete" onclick="doDelete('${id}','${table}')">Delete</button>
+          <button class="btn-cancel" onclick="document.getElementById('confirmDialog').style.display='none';pendingDelete=null;">Cancel</button>
+          <button class="btn-delete" onclick="doDelete()">Delete</button>
         </div>
       </div>
     </div>`;
 }
 
-async function doDelete(id, table) {
+async function doDelete() {
+  if (!pendingDelete) return;
+  const { id, table } = pendingDelete;
+  pendingDelete = null;
   document.getElementById('confirmDialog').style.display = 'none';
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
