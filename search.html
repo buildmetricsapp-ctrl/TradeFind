@@ -381,7 +381,7 @@ function renderResults() {
           <div class="c-actions" onclick="event.stopPropagation()">
             <button class="c-btn primary" onclick="copyText('${c.phone}','Phone number')">📞 ${c.phone || 'No phone'}</button>
             <button class="c-btn" onclick="copyText('${c.email}','Email address')">✉️ Copy email</button>
-            ${c.website ? `<a class="c-btn" href="https://${c.website.replace(/^https?:\/\//,'')}" target="_blank">🌐 Website</a>` : ''}
+            <a class="c-btn" href="contractor.html?id=${c.id}">👤 View profile</a>
           </div>
         </div>
       </div>

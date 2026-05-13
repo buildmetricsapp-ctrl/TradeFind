@@ -223,7 +223,7 @@ const SUPABASE_URL = 'https://vkpiyahchpntarsoncwn.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrcGl5YWhjaHBudGFyc29uY3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTM3NTUsImV4cCI6MjA5NDIyOTc1NX0.gAEvO76tPVR8gOLjCxc0I1ojFQL4Wo7DWpwFQn9m9a8';
 
 // ⚠️ CHANGE THIS PASSWORD before deploying!
-const ADMIN_PASSWORD = '6362133_Admin@2026';
+const ADMIN_PASSWORD = 'TradeFind@Admin2025';
 
 let contractors = [];
 let leads = [];
@@ -310,7 +310,7 @@ function renderContractors(list) {
       <td class="td-muted">${c.years_experience||0} yrs</td>
       <td><span class="td-badge ${badgeClass(c.availability)}">${badgeLabel(c.availability)}</span></td>
       <td class="td-muted">${new Date(c.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
-      <td><button class="del-btn" onclick="confirmDelete('${c.id}','${(c.biz_name||'').replace(/'/g,"\\'")}','contractors')">Delete</button></td>
+      <td><a href="contractor.html?id=${c.id}" target="_blank" style="font-size:0.78rem;color:var(--green-bright);text-decoration:none;">View ↗</a> <button class="del-btn" onclick="confirmDelete('${c.id}','${(c.biz_name||'').replace(/'/g,"\\'")}','contractors')">Delete</button></td>
     </tr>
   `).join('');
 }

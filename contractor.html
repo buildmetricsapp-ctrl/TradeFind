@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contractor Profile — TradeFind</title>
+<meta name="theme-color" content="#0D1F0F" />
+<link rel="manifest" href="manifest.json" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green-dark: #0D1F0F;
+  --green-mid: #1A3D1E;
+  --green-accent: #2D6A35;
+  --green-bright: #4CAF5A;
+  --cream: #F5F0E8;
+  --text-light: #C8D8C9;
+  --text-muted: #7A9B7D;
+  --amber: #E8A020;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--green-dark); color: var(--cream); min-height: 100vh; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 2rem;
+  background: rgba(13,31,15,0.95); backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(77,175,90,0.12);
+}
+.logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 900; color: var(--cream); text-decoration: none; letter-spacing: -0.02em; }
+.logo span { color: var(--green-bright); }
+.nav-right { display: flex; gap: 1rem; align-items: center; }
+.nav-link { font-size: 0.85rem; color: var(--text-muted); text-decoration: none; transition: color .2s; }
+.nav-link:hover { color: var(--cream); }
+.nav-cta { background: var(--green-bright); color: var(--green-dark); padding: 0.5rem 1.1rem; border-radius: 99px; font-size: 0.85rem; font-weight: 500; text-decoration: none; }
+
+/* LOADING / ERROR */
+.state-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
+.spinner { width: 40px; height: 40px; border: 3px solid rgba(77,175,90,0.2); border-top-color: var(--green-bright); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 1rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.state-page h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 0.5rem; }
+.state-page p { color: var(--text-muted); font-size: 0.9rem; }
+
+/* PROFILE */
+.profile { max-width: 680px; margin: 0 auto; padding: 6rem 2rem 4rem; }
+@media (max-width: 600px) { .profile { padding: 5rem 1.25rem 3rem; } }
+
+/* HERO CARD */
+.hero-card {
+  background: var(--green-mid);
+  border: 1px solid rgba(77,175,90,0.15);
+  border-radius: 20px; padding: 2rem;
+  margin-bottom: 1rem;
+  animation: fadeUp .5s ease;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+.hero-top { display: flex; align-items: flex-start; gap: 1.25rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.avatar { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; flex-shrink: 0; }
+.av-teal { background: #0F6E5625; color: #5DCAA5; border: 2px solid #0F6E5640; }
+.av-blue { background: #185FA525; color: #85B7EB; border: 2px solid #185FA540; }
+.av-amber { background: #854F0B25; color: #EF9F27; border: 2px solid #854F0B40; }
+.av-purple { background: #534AB725; color: #AFA9EC; border: 2px solid #534AB740; }
+.av-coral { background: #993C1D25; color: #F0997B; border: 2px solid #993C1D40; }
+.av-green { background: #3B6D1125; color: #97C459; border: 2px solid #3B6D1140; }
+
+.hero-info { flex: 1; min-width: 0; }
+.biz-name { font-family: 'Playfair Display', serif; font-size: clamp(1.4rem, 4vw, 1.8rem); font-weight: 700; line-height: 1.2; margin-bottom: 6px; }
+.biz-trade { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; }
+.status-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; padding: 4px 12px; border-radius: 99px; }
+.badge-open { background: rgba(59,109,17,0.2); color: #97C459; border: 1px solid rgba(59,109,17,0.3); }
+.badge-busy { background: rgba(186,117,23,0.2); color: #EF9F27; border: 1px solid rgba(186,117,23,0.3); }
+.badge-booked { background: rgba(162,45,45,0.2); color: #F09595; border: 1px solid rgba(162,45,45,0.3); }
+
+/* STATS ROW */
+.stats-row { display: flex; gap: 1.5rem; padding: 1.25rem 0; border-top: 1px solid rgba(77,175,90,0.1); border-bottom: 1px solid rgba(77,175,90,0.1); margin-bottom: 1.25rem; flex-wrap: wrap; }
+.stat { text-align: center; }
+.stat-n { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--cream); line-height: 1; }
+.stat-n span { color: var(--green-bright); }
+.stat-l { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-top: 4px; }
+
+/* DESCRIPTION */
+.description { font-size: 0.9rem; color: var(--text-light); line-height: 1.7; }
+
+/* CONTACT CARD */
+.contact-card {
+  background: var(--green-mid); border: 1px solid rgba(77,175,90,0.15);
+  border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
+  animation: fadeUp .5s .1s ease both;
+}
+.card-title { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 1rem; }
+.contact-actions { display: flex; flex-direction: column; gap: 10px; }
+.contact-btn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0.9rem 1.25rem; border-radius: 12px;
+  border: 1px solid rgba(77,175,90,0.2); background: transparent;
+  color: var(--cream); font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; cursor: pointer; transition: background .15s;
+  text-decoration: none; width: 100%; text-align: left;
+}
+.contact-btn:hover { background: rgba(77,175,90,0.08); }
+.contact-btn.primary { background: rgba(77,175,90,0.15); border-color: rgba(77,175,90,0.4); }
+.contact-btn.primary:hover { background: rgba(77,175,90,0.25); }
+.contact-icon { font-size: 1.1rem; width: 24px; text-align: center; flex-shrink: 0; }
+.contact-detail { flex: 1; }
+.contact-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.contact-val { font-size: 0.9rem; color: var(--cream); margin-top: 1px; }
+.copy-indicator { font-size: 0.75rem; color: var(--green-bright); opacity: 0; transition: opacity .2s; }
+.copy-indicator.show { opacity: 1; }
+
+/* SERVICES CARD */
+.services-card {
+  background: var(--green-mid); border: 1px solid rgba(77,175,90,0.15);
+  border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
+  animation: fadeUp .5s .2s ease both;
+}
+.services-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 0.75rem; }
+.service-tag { font-size: 0.82rem; padding: 6px 14px; border-radius: 8px; background: rgba(77,175,90,0.08); border: 1px solid rgba(77,175,90,0.15); color: var(--text-light); }
+
+/* AREAS CARD */
+.areas-card {
+  background: var(--green-mid); border: 1px solid rgba(77,175,90,0.15);
+  border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
+  animation: fadeUp .5s .3s ease both;
+}
+.zip-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 0.75rem; }
+.zip-pill { font-size: 0.82rem; padding: 5px 12px; border-radius: 99px; background: rgba(255,255,255,0.04); border: 1px solid rgba(77,175,90,0.12); color: var(--text-muted); }
+
+/* SHARE CARD */
+.share-card {
+  background: rgba(77,175,90,0.06); border: 1px solid rgba(77,175,90,0.15);
+  border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;
+  animation: fadeUp .5s .4s ease both;
+}
+.share-card p { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.6; }
+.share-url { display: flex; gap: 8px; }
+.share-url input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(77,175,90,0.2); border-radius: 8px; padding: 0.7rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--text-muted); outline: none; }
+.share-url button { background: var(--green-bright); border: none; border-radius: 8px; padding: 0.7rem 1.25rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; color: var(--green-dark); cursor: pointer; white-space: nowrap; transition: background .15s; }
+.share-url button:hover { background: #5DC96C; }
+.share-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.share-btn { flex: 1; min-width: 100px; padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(77,175,90,0.2); background: transparent; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; transition: all .15s; text-align: center; }
+.share-btn:hover { background: rgba(77,175,90,0.08); color: var(--cream); }
+
+/* CTA */
+.cta-card {
+  background: var(--green-mid); border: 1px solid rgba(77,175,90,0.15);
+  border-radius: 16px; padding: 1.5rem; text-align: center;
+  animation: fadeUp .5s .5s ease both;
+}
+.cta-card p { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.6; }
+.cta-card a { display: inline-block; background: var(--green-bright); color: var(--green-dark); border-radius: 99px; padding: 0.75rem 2rem; font-size: 0.9rem; font-weight: 500; text-decoration: none; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: var(--green-mid); border: 1px solid rgba(77,175,90,0.3); border-radius: 99px; padding: 0.6rem 1.25rem; font-size: 0.85rem; color: var(--green-bright); opacity: 0; transition: opacity .2s; z-index: 300; pointer-events: none; white-space: nowrap; }
+.toast.show { opacity: 1; }
+
+/* BG */
+.bg-circle { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+.bg-c1 { width: 500px; height: 500px; top: -100px; right: -150px; background: radial-gradient(circle, rgba(45,106,53,0.12) 0%, transparent 70%); }
+</style>
+</head>
+<body>
+
+<div class="bg-circle bg-c1"></div>
+
+<nav>
+  <a href="index.html" class="logo">Trade<span>Find</span></a>
+  <div class="nav-right">
+    <a href="search.html" class="nav-link">Find contractors</a>
+    <a href="signup.html" class="nav-cta">List your business</a>
+  </div>
+</nav>
+
+<!-- LOADING STATE -->
+<div class="state-page" id="loadingState">
+  <div><div class="spinner"></div><p style="color:var(--text-muted)">Loading profile...</p></div>
+</div>
+
+<!-- ERROR STATE -->
+<div class="state-page" id="errorState" style="display:none;">
+  <div>
+    <h2>Contractor not found</h2>
+    <p style="margin:0.5rem 0 1.5rem;">This profile may have been removed or the link is incorrect.</p>
+    <a href="search.html" style="color:var(--green-bright);font-size:0.9rem;">← Search for contractors</a>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="profile" id="profilePage" style="display:none;position:relative;z-index:1;">
+
+  <!-- HERO -->
+  <div class="hero-card">
+    <div class="hero-top">
+      <div class="avatar" id="profileAvatar"></div>
+      <div class="hero-info">
+        <div class="biz-name" id="profileName"></div>
+        <div class="biz-trade" id="profileTrade"></div>
+        <span class="status-badge" id="profileStatus"></span>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-n" id="statYears">—</div>
+        <div class="stat-l">Years exp.</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n" id="statAreas">—</div>
+        <div class="stat-l">Areas served</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n" id="statServices">—</div>
+        <div class="stat-l">Services</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n" id="statJoined">—</div>
+        <div class="stat-l">Member since</div>
+      </div>
+    </div>
+    <div class="description" id="profileDesc"></div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="contact-card">
+    <div class="card-title">Contact this contractor</div>
+    <div class="contact-actions" id="contactActions"></div>
+  </div>
+
+  <!-- SERVICES -->
+  <div class="services-card" id="servicesCard" style="display:none;">
+    <div class="card-title">Services offered</div>
+    <div class="services-grid" id="servicesList"></div>
+  </div>
+
+  <!-- AREAS -->
+  <div class="areas-card" id="areasCard" style="display:none;">
+    <div class="card-title">Service areas</div>
+    <div class="zip-list" id="zipList"></div>
+  </div>
+
+  <!-- SHARE -->
+  <div class="share-card">
+    <div class="card-title">Share this profile</div>
+    <p>Share this contractor's profile page directly — perfect for referrals or word of mouth.</p>
+    <div class="share-url">
+      <input type="text" id="shareUrl" readonly />
+      <button onclick="copyShareUrl()">Copy link</button>
+    </div>
+    <div class="share-btns">
+      <button class="share-btn" onclick="shareWhatsApp()">📱 WhatsApp</button>
+      <button class="share-btn" onclick="shareSMS()">💬 SMS</button>
+      <button class="share-btn" onclick="shareNative()">↗ Share</button>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-card">
+    <p>Are you a contractor? Get your own free profile page on TradeFind and start getting discovered by homeowners in your area.</p>
+    <a href="signup.html">List your business free →</a>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://vkpiyahchpntarsoncwn.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrcGl5YWhjaHBudGFyc29uY3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTM3NTUsImV4cCI6MjA5NDIyOTc1NX0.gAEvO76tPVR8gOLjCxc0I1ojFQL4Wo7DWpwFQn9m9a8';
+const AVATARS = ['av-teal','av-blue','av-amber','av-purple','av-coral','av-green'];
+
+function initials(name) {
+  if (!name) return '??';
+  return name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+}
+function avatarClass(id) {
+  return AVATARS[id ? id.charCodeAt(0) % AVATARS.length : 0];
+}
+function badgeClass(a) {
+  if (!a||a==='available') return 'badge-open';
+  if (a==='busy') return 'badge-busy';
+  return 'badge-booked';
+}
+function badgeLabel(a) {
+  if (!a||a==='available') return '🟢 Available now';
+  if (a==='busy') return '🟡 Busy — limited availability';
+  return '🔴 Fully booked';
+}
+
+async function loadProfile() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+
+  if (!id) { showError(); return; }
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/contractors?id=eq.${id}&select=*`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const data = await res.json();
+    if (!data.length) { showError(); return; }
+    renderProfile(data[0]);
+  } catch(e) { showError(); }
+}
+
+function renderProfile(c) {
+  // Update page title & meta
+  document.title = `${c.biz_name} — TradeFind`;
+
+  // Avatar
+  const av = document.getElementById('profileAvatar');
+  av.className = `avatar ${avatarClass(c.id)}`;
+  av.textContent = initials(c.biz_name);
+
+  // Hero
+  document.getElementById('profileName').textContent = c.biz_name || 'Unnamed Business';
+  document.getElementById('profileTrade').textContent = c.trade || 'General Contractor';
+  const badge = document.getElementById('profileStatus');
+  badge.className = `status-badge ${badgeClass(c.availability)}`;
+  badge.textContent = badgeLabel(c.availability);
+
+  // Stats
+  document.getElementById('statYears').innerHTML = `${c.years_experience||0}<span>+</span>`;
+  document.getElementById('statAreas').textContent = (c.zip_codes||[]).length;
+  document.getElementById('statServices').textContent = (c.services||[]).length;
+  document.getElementById('statJoined').textContent = new Date(c.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'});
+
+  // Description
+  const desc = document.getElementById('profileDesc');
+  if (c.description) { desc.textContent = c.description; } else { desc.style.display = 'none'; }
+
+  // Contact actions
+  const actions = document.getElementById('contactActions');
+  actions.innerHTML = '';
+  if (c.phone) {
+    actions.innerHTML += `
+      <a class="contact-btn primary" href="tel:${c.phone}">
+        <span class="contact-icon">📞</span>
+        <div class="contact-detail"><div class="contact-label">Call directly</div><div class="contact-val">${c.phone}</div></div>
+      </a>`;
+  }
+  if (c.email) {
+    actions.innerHTML += `
+      <button class="contact-btn" onclick="copyText('${c.email}','Email')">
+        <span class="contact-icon">✉️</span>
+        <div class="contact-detail"><div class="contact-label">Email</div><div class="contact-val">${c.email}</div></div>
+        <span class="copy-indicator" id="copyEmail">Copied!</span>
+      </button>`;
+  }
+  if (c.website) {
+    const url = c.website.startsWith('http') ? c.website : `https://${c.website}`;
+    actions.innerHTML += `
+      <a class="contact-btn" href="${url}" target="_blank">
+        <span class="contact-icon">🌐</span>
+        <div class="contact-detail"><div class="contact-label">Website</div><div class="contact-val">${c.website}</div></div>
+      </a>`;
+  }
+
+  // Services
+  if ((c.services||[]).length) {
+    document.getElementById('servicesCard').style.display = 'block';
+    document.getElementById('servicesList').innerHTML = c.services.map(s=>`<span class="service-tag">${s}</span>`).join('');
+  }
+
+  // Areas
+  if ((c.zip_codes||[]).length) {
+    document.getElementById('areasCard').style.display = 'block';
+    document.getElementById('zipList').innerHTML = c.zip_codes.map(z=>`<span class="zip-pill">📍 ${z}</span>`).join('');
+  }
+
+  // Share URL
+  const shareUrl = window.location.href;
+  document.getElementById('shareUrl').value = shareUrl;
+
+  // Show profile
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('profilePage').style.display = 'block';
+}
+
+function showError() {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorState').style.display = 'flex';
+}
+
+function copyText(text, label) {
+  navigator.clipboard.writeText(text).then(() => showToast(`${label} copied!`));
+}
+
+function copyShareUrl() {
+  const url = document.getElementById('shareUrl').value;
+  navigator.clipboard.writeText(url).then(() => showToast('Profile link copied!'));
+}
+
+function shareWhatsApp() {
+  const url = encodeURIComponent(window.location.href);
+  const name = document.getElementById('profileName').textContent;
+  window.open(`https://wa.me/?text=Check out ${encodeURIComponent(name)} on TradeFind: ${url}`);
+}
+
+function shareSMS() {
+  const url = window.location.href;
+  const name = document.getElementById('profileName').textContent;
+  window.open(`sms:?body=Check out ${name} on TradeFind: ${url}`);
+}
+
+function shareNative() {
+  if (navigator.share) {
+    navigator.share({
+      title: document.getElementById('profileName').textContent,
+      text: 'Check out this contractor on TradeFind',
+      url: window.location.href
+    });
+  } else { copyShareUrl(); }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = '✓ ' + msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+loadProfile();
+</script>
+</body>
+</html>
