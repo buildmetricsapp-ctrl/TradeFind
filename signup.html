@@ -539,34 +539,56 @@ ua.addEventListener('drop', e => {
 });
 
 // Submit
-function submitForm() {
+async function submitForm() {
   if (!validateStep(3)) return;
 
+  const SUPABASE_URL = 'https://vkpiyahchpntarsonckwn.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrcGl5YWhjaHBudGFyc29uY3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTM3NTUsImV4cCI6MjA5NDIyOTc1NX0.gAEvO76tPVR8gOLjCxc0I1ojFQL4Wo7DWpwFQn9m9a8';
+
   const data = {
-    bizName: document.getElementById('bizName').value.trim(),
-    ownerName: document.getElementById('ownerName').value.trim(),
+    biz_name: document.getElementById('bizName').value.trim(),
+    owner_name: document.getElementById('ownerName').value.trim(),
     email: document.getElementById('email').value.trim(),
     phone: document.getElementById('phone').value.trim(),
     website: document.getElementById('website').value.trim(),
     trade: selectedTrade,
     services: serviceTags,
-    zipCodes: zipCodes,
-    years: document.getElementById('yearsSlider').value,
+    zip_codes: zipCodes,
+    years_experience: parseInt(document.getElementById('yearsSlider').value),
     description: document.getElementById('description').value.trim(),
-    availability: document.getElementById('availability').value,
-    createdAt: new Date().toISOString()
+    availability: document.getElementById('availability').value
   };
 
-  // TODO: POST to Supabase
-  // await supabase.from('contractors').insert([data]);
-  console.log('Contractor signup:', data);
+  const btn = document.querySelector('#step-3 .btn-next');
+  btn.textContent = 'Publishing...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/contractors`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('Failed to save');
+  } catch(e) {
+    console.error(e);
+    btn.textContent = '🚀 Go live now — it\'s free';
+    btn.disabled = false;
+    alert('Something went wrong. Please try again.');
+    return;
+  }
 
   // Show success
   document.getElementById('step-3').classList.remove('active');
   document.getElementById('successScreen').classList.add('show');
-  document.getElementById('s-bizName').textContent = data.bizName;
-  document.getElementById('s-trade').textContent = data.trade + ' · ' + data.years + ' years experience';
-  document.getElementById('s-areas').textContent = '📍 Serving: ' + data.zipCodes.join(', ');
+  document.getElementById('s-bizName').textContent = data.biz_name;
+  document.getElementById('s-trade').textContent = data.trade + ' · ' + data.years_experience + ' years experience';
+  document.getElementById('s-areas').textContent = '📍 Serving: ' + data.zip_codes.join(', ');
   document.getElementById('s-email').textContent = data.email;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
